@@ -211,6 +211,7 @@ const logout = async (req, res) => {
 router.post('/signup', signup);
 router.post('/login', login);
 router.get('/me', protect, getMe);
+router.get('/verify', protect, getMe); // Alias for token verification
 router.put('/updatedetails', protect, updateDetails);
 router.post('/logout', protect, logout);
 
