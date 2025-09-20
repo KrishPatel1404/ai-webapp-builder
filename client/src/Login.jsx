@@ -190,18 +190,6 @@ function Login() {
               {isSignup ? "Sign In" : "Sign Up"}
             </button>
           </p>
-
-          {/* Forgot password link (only for login) */}
-          {!isSignup && (
-            <p className="text-center mt-4">
-              <a
-                href="#"
-                className="text-gray-400 hover:text-blue-300 transition-colors duration-200"
-              >
-                Forgot your password?
-              </a>
-            </p>
-          )}
         </div>
       </div>
     </div>
