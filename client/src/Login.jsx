@@ -1,10 +1,12 @@
 import React, { useState } from "react";
-import { FiEye, FiEyeOff, FiMail, FiLock } from "react-icons/fi";
+import { FiEye, FiEyeOff, FiMail, FiLock, FiUser } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
 
 function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [isSignup, setIsSignup] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -54,8 +56,8 @@ function Login() {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem("token", data.token);
         console.log(`${isSignup ? "Signup" : "Login"} successful:`, data);
+        login(data.token, data.user);
         // Redirect to main app or dashboard
         navigate("/");
       } else {

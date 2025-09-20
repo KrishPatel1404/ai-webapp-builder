@@ -1,10 +1,16 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
-import { FiInfo, FiMail, FiUser } from "react-icons/fi";
+import { Link, useNavigate } from "react-router-dom";
+import { FiInfo, FiMail, FiUser, FiLogOut } from "react-icons/fi";
+import { useAuth } from "../context/AuthContext";
 
 function Navbar() {
-  const location = useLocation();
-  const isLoginPage = location.pathname === "/login";
+  const navigate = useNavigate();
+  const { isAuthenticated, logout, loading } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   return (
     <nav className="bg-gray-800 px-6 py-4">
@@ -30,20 +36,24 @@ function Navbar() {
           >
             <FiMail className="mr-1" /> Contact
           </a>
-          {isLoginPage ? (
-            <Link
-              to="/"
-              className="flex items-center text-xl text-gray-200 hover:text-blue-300 transition-colors duration-200"
-            >
-              <FiUser className="mr-1" /> Profile
-            </Link>
-          ) : (
-            <Link
-              to="/login"
-              className="flex items-center text-xl text-gray-200 hover:text-blue-300 transition-colors duration-200"
-            >
-              <FiUser className="mr-1" /> Login
-            </Link>
+          {!loading && (
+            <>
+              {isAuthenticated ? (
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center text-xl text-gray-200 hover:text-blue-300 transition-colors duration-200"
+                >
+                  <FiLogOut className="mr-1" /> Logout
+                </button>
+              ) : (
+                <Link
+                  to="/login"
+                  className="flex items-center text-xl text-gray-200 hover:text-blue-300 transition-colors duration-200"
+                >
+                  <FiUser className="mr-1" /> Login
+                </Link>
+              )}
+            </>
           )}
         </div>
       </div>
