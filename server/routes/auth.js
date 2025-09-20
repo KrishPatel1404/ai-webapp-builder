@@ -127,7 +127,7 @@ const login = async (req, res) => {
 };
 
 // @desc    Get current authenticated user
-// @route   GET /api/auth/me
+// @route   GET /api/auth/verify
 // @access  Private
 const getMe = async (req, res) => {
     try {
@@ -210,8 +210,7 @@ const logout = async (req, res) => {
 // Define routes
 router.post('/signup', signup);
 router.post('/login', login);
-router.get('/me', protect, getMe);
-router.get('/verify', protect, getMe); // Alias for token verification
+router.get('/verify', protect, getMe);
 router.put('/updatedetails', protect, updateDetails);
 router.post('/logout', protect, logout);
 
