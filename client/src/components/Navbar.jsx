@@ -31,12 +31,12 @@ function Navbar() {
             <FiInfo className="mr-1" /> About
           </a>
           {isAuthenticated ? (
-            <a
-              href="#"
+            <Link
+              to="/profile"
               className="flex items-center text-xl text-gray-200 hover:text-blue-300 transition-colors duration-200"
             >
               <FiUser className="mr-1" /> Profile
-            </a>
+            </Link>
           ) : null}
           {!loading && (
             <>
