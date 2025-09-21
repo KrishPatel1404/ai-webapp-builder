@@ -4,6 +4,7 @@
   "description": "Intern Evaluation Task: Mini AI App Builder Portal + User App UI",
   "main": "index.js",
   "scripts": {
+    "install-all": "concurrently -n \"SERVER,CLIENT\" -c \"cyan,green\" \"npm install --prefix server\" \"npm install --prefix client\"",
     "dev": "concurrently -n \"SERVER,CLIENT\" -c \"cyan,green\" \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
     "client": "cd client && npm start",
     "server": "cd server && npm start"
