@@ -86,7 +86,9 @@ const extractRequirements = async (req, res) => {
 
         const aiResponse = completion.output_text;
 
-        console.log('AI Response:\n', aiResponse);
+        if (process.env.NODE_ENV !== 'production') {
+            console.log('AI Response:\n', aiResponse);
+        }
 
         // Check if the AI response is empty or null
         if (!aiResponse || aiResponse.trim() === '') {
