@@ -2,6 +2,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FiInfo, FiUser, FiLogOut, FiLogIn, FiLayers } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext";
+import logo from "../assets/logo.webp";
 
 function Navbar() {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ function Navbar() {
       <div className="flex items-center justify-between">
         <Link to="/" className="flex items-center">
           <img
-            src="/src/assets/logo.webp"
+            src={logo}
             alt="Logo"
             className="h-8 hover:scale-105 transition-transform duration-200"
           />
