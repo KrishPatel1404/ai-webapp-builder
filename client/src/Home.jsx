@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import {
   FiSend,
-  FiFacebook,
-  FiTwitter,
   FiInstagram,
+  FiGithub,
+  FiLinkedin,
   FiLoader,
+  FiLink,
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
@@ -115,15 +116,14 @@ function Home() {
       {/* Main Section */}
       <div className="flex-grow flex flex-col items-center justify-center px-4 text-center relative z-10">
         <h1 className="text-6xl md:text-6xl font-bold text-white mb-2 text-center transition-colors duration-200">
-          Build your <span className="text-blue-500">AI Website</span> in
-          Minutes
+          Build your <span className="text-blue-500">A.I App</span> in Minutes
         </h1>
         <h2 className="text-4xl md:text-4xl pb-4 font-semibold text-blue-200">
           Create • Connect • Inspire
         </h2>
 
         <div className="flex flex-col md:flex-row items-center gap-2 text-gray-400 mb-10">
-          2.4 MILLION+ Sites have already been built
+          Lorem ipsum dolor sit amet consectetur adipiscing elit.
         </div>
 
         {/* Input box */}
@@ -131,7 +131,7 @@ function Home() {
           <textarea
             rows={1}
             placeholder="Describe the website you want..."
-            className="w-full py-4 px-6 pr-12 rounded-lg bg-gray-800 text-white border border-gray-700 focus:border-blue-500 focus:outline-none text-lg shadow-lg transition-all duration-200 overflow-hidden resize-none"
+            className="w-full py-4 px-6 pr-12 rounded-2xl bg-gray-800 text-white border border-gray-700 focus:border-blue-500 focus:outline-none text-lg shadow-lg transition-all duration-200 overflow-hidden resize-none"
             value={searchText}
             onChange={handleInputChange}
             disabled={isLoading}
@@ -173,9 +173,9 @@ function Home() {
           </div>
         )}
 
-        <p className="text-gray-400 mb-6 text-center max-w-md">
-          Get access to our AI templates at zero cost — no design skill or
-          copywriting experience required!
+        <p className="text-gray-400 mb-6 mt-2 text-center max-w-md">
+          Lorem ipsum dolor sit amet consectetur adipiscing elit. Dolor sit amet
+          consectetur adipiscing elit quisque faucibus.
         </p>
       </div>
 
@@ -183,20 +183,38 @@ function Home() {
       <div className="pt-12 pb-4 text-center relative bg-gradient-to-b from-transparent to-gray-900">
         <div className="flex justify-center mt-4 space-x-4">
           <h1 className="text-lg md:text-xl font-bold text-white">
-            2000+ AI Funnel Templates • 5000+ AI Templates
+            100+ Lorem Ipsum Dolor • 2000+ Lorem Ipsum
           </h1>
-          <FiFacebook
-            size={24}
-            className="text-white hover:text-blue-400 cursor-pointer transition"
-          />
-          <FiTwitter
-            size={24}
-            className="text-white hover:text-blue-400 cursor-pointer transition"
-          />
-          <FiInstagram
-            size={24}
-            className="text-white hover:text-blue-400 cursor-pointer transition"
-          />
+          <a
+            href="https://www.instagram.com/krishpkreame/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <FiInstagram
+              size={24}
+              className="text-white hover:text-blue-400 cursor-pointer transition"
+            />
+          </a>
+          <a
+            href="https://github.com/KrishPatel1404"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <FiGithub
+              size={24}
+              className="text-white hover:text-blue-400 cursor-pointer transition"
+            />
+          </a>
+          <a
+            href="www.linkedin.com/in/krish-patel-844834234"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <FiLinkedin
+              size={24}
+              className="text-white hover:text-blue-400 cursor-pointer transition"
+            />
+          </a>
         </div>
       </div>
     </div>
