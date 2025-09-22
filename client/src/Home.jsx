@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { FiSend, FiFacebook, FiTwitter, FiInstagram } from "react-icons/fi";
+import {
+  FiSend,
+  FiFacebook,
+  FiTwitter,
+  FiInstagram,
+  FiLoader,
+} from "react-icons/fi";
 import Navbar from "./components/Navbar";
 import { useAuth } from "./context/AuthContext";
 
@@ -131,11 +137,15 @@ function Home() {
             disabled={isLoading}
           />
           <button
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-blue-500 hover:text-blue-300 transition-colors duration-200 p-2"
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-blue-500 hover:text-blue-300 transition-colors duration-200 p-2 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleSendClick}
             disabled={isLoading}
           >
-            <FiSend size={26} />
+            {isLoading ? (
+              <FiLoader size={26} className="animate-spin" />
+            ) : (
+              <FiSend size={26} />
+            )}
           </button>
         </div>
 

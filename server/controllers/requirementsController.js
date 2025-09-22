@@ -25,7 +25,7 @@ Your job: analyze the input text and return ONLY a valid JSON object with this s
       "hint": "string - any additional context or notes about on how to implement or consider this feature"
     }
   ],
-  "technicalRequirements": ["string array - any technology constraints (e.g. 'Use MongoDB')"],
+  "technicalRequirements": ["string array - any technology constraints (make sure to add technical requirements even if not explicitly stated)"],
   "businessRules": ["string array - any explicit or implied rules (e.g. 'Students must enrol before receiving grades')"]
 }
 
@@ -37,7 +37,6 @@ Rules:
 - Be specific and actionable in feature descriptions.
 - Keep names concise and consistent, but meaningful and use spaces between words.
 - Do not add any extra commentary or text outside the JSON.
-- Try to fill in technical requirements and business rules fields as possible based on the input, with simple assumptions if needed.
 `;
 
 // @desc    Extract requirements from natural language text
