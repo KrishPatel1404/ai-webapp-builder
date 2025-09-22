@@ -35,8 +35,9 @@ Rules:
 - If a field has no information, use an empty string, empty array, or empty object as appropriate.
 - Always output valid JSON, with double quotes for keys and string values.
 - Be specific and actionable in feature descriptions.
-- Keep names concise and consistent.
+- Keep names concise and consistent, but meaningful and use spaces between words.
 - Do not add any extra commentary or text outside the JSON.
+- Try to fill in technical requirements and business rules fields as possible based on the input, with simple assumptions if needed.
 `;
 
 // @desc    Extract requirements from natural language text
@@ -86,6 +87,8 @@ const extractRequirements = async (req, res) => {
 
         const aiResponse = completion.output_text;
 
+        console.log('AI Response:\n', aiResponse);
+
         // Check if the AI response is empty or null
         if (!aiResponse || aiResponse.trim() === '') {
             console.error('Empty AI response received');
@@ -124,7 +127,7 @@ const extractRequirements = async (req, res) => {
             title: title,
             extractedRequirements: extractedRequirements,
             user: req.user._id,
-            status: 'completed',
+            status: 'draft',
             metadata: {
                 processingTime: processingTime,
                 tokensUsed: completion.usage?.total_tokens || 0,

@@ -29,8 +29,8 @@ const requirementSchema = new mongoose.Schema({
     // Status of the requirement extraction
     status: {
         type: String,
-        enum: ['processing', 'completed', 'failed'],
-        default: 'processing'
+        enum: ['draft', 'processing', 'completed', 'failed'],
+        default: 'draft'
     },
     // Metadata about the extraction process
     metadata: {
