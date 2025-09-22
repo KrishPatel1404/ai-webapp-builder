@@ -8,14 +8,12 @@ const PORT = process.env.PORT;
 
 // Import routes
 const authRoutes = require('./routes/auth');
+const requirementsRoutes = require('./routes/requirements');
 
 // MongoDB connection
 const connectDB = async () => {
     try {
-        const conn = await mongoose.connect(process.env.MONGODB_URI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        });
+        const conn = await mongoose.connect(process.env.MONGODB_URI);
         console.log(`MongoDB Connected: ${conn.connection.host}`);
     } catch (error) {
         console.error('Database connection failed:', error);
@@ -38,6 +36,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Mount routes
 app.use('/api/auth', authRoutes);
+app.use('/api/requirements', requirementsRoutes);
 
 // Basic Hello World route
 app.get('/', (req, res) => {

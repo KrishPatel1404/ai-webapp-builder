@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FiInfo, FiUser, FiLogOut, FiLogIn } from "react-icons/fi";
+import { FiInfo, FiUser, FiLogOut, FiLogIn, FiLayers } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext";
 
 function Navbar() {
@@ -31,12 +31,20 @@ function Navbar() {
             <FiInfo className="mr-1" /> About
           </a>
           {isAuthenticated ? (
-            <Link
-              to="/profile"
-              className="flex items-center text-xl text-gray-200 hover:text-blue-300 transition-colors duration-200"
-            >
-              <FiUser className="mr-1" /> Profile
-            </Link>
+            <>
+              <Link
+                to="/requirements"
+                className="flex items-center text-xl text-gray-200 hover:text-blue-300 transition-colors duration-200"
+              >
+                <FiLayers className="mr-1" /> Requirements
+              </Link>
+              <Link
+                to="/profile"
+                className="flex items-center text-xl text-gray-200 hover:text-blue-300 transition-colors duration-200"
+              >
+                <FiUser className="mr-1" /> Profile
+              </Link>
+            </>
           ) : null}
           {!loading && (
             <>
