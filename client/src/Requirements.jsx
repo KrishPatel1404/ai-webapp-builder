@@ -290,6 +290,13 @@ function Requirements() {
     }));
   };
 
+  const handleGenerate = () => {
+    console.log(
+      "Requirements data:",
+      selectedRequirement.extractedRequirements
+    );
+  };
+
   if (loading || loadingRequirements) {
     return (
       <div className="min-h-screen bg-gray-900 text-white">
@@ -522,12 +529,20 @@ function Requirements() {
                           </button>
                         </>
                       ) : (
-                        <button
-                          onClick={() => setIsEditing(true)}
-                          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
-                        >
-                          Edit
-                        </button>
+                        <>
+                          <button
+                            onClick={handleGenerate}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+                          >
+                            Generate
+                          </button>
+                          <button
+                            onClick={() => setIsEditing(true)}
+                            className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+                          >
+                            Edit
+                          </button>
+                        </>
                       )}
                       <button
                         onClick={closeModal}
