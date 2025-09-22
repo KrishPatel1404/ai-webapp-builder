@@ -4,6 +4,7 @@ const {
     extractRequirements,
     getUserRequirements,
     getRequirementById,
+    updateRequirement,
     deleteRequirement
 } = require('../controllers/requirementsController');
 
@@ -19,11 +20,12 @@ router.route('/')
     .post(extractRequirements)
     .get(getUserRequirements);
 
-// @desc    Get specific requirement & Delete requirement
-// @route   GET /api/requirements/:id & DELETE /api/requirements/:id
+// @desc    Get specific requirement, Update requirement & Delete requirement
+// @route   GET /api/requirements/:id, PUT /api/requirements/:id & DELETE /api/requirements/:id
 // @access  Private
 router.route('/:id')
     .get(getRequirementById)
+    .put(updateRequirement)
     .delete(deleteRequirement);
 
 module.exports = router;

@@ -279,9 +279,135 @@ const deleteRequirement = async (req, res) => {
     }
 };
 
+// @desc    Update a requirement
+// @route   PUT /api/requirements/:id
+// @access  Private
+const updateRequirement = async (req, res) => {
+    try {
+        const { title, prompt, extractedRequirements } = req.body;
+
+        // Find the requirement and ensure it belongs to the authenticated user
+        const requirement = await Requirement.findOne({
+            _id: req.params.id,
+            user: req.user._id
+        });
+
+        if (!requirement) {
+            return res.status(404).json({
+                success: false,
+                message: 'Requirement not found'
+            });
+        }
+
+        // Validate input
+        if (prompt && (typeof prompt !== 'string' || prompt.trim().length < 10)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Prompt must be at least 10 characters long'
+            });
+        }
+
+        if (prompt && prompt.length > 1500) {
+            return res.status(400).json({
+                success: false,
+                message: 'Prompt cannot be more than 1500 characters'
+            });
+        }
+
+        if (title && (typeof title !== 'string' || title.trim().length < 1)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Title is required and cannot be empty'
+            });
+        }
+
+        if (title && title.length > 150) {
+            return res.status(400).json({
+                success: false,
+                message: 'Title cannot be more than 150 characters'
+            });
+        }
+
+        // Validate extractedRequirements structure if provided
+        if (extractedRequirements) {
+            const requiredFields = ['appName', 'entities', 'roles', 'features', 'technicalRequirements', 'businessRules'];
+            const missingFields = requiredFields.filter(field => !(field in extractedRequirements));
+
+            if (missingFields.length > 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Missing required fields in extractedRequirements: ${missingFields.join(', ')}`
+                });
+            }
+
+            // Validate that arrays are actually arrays
+            const arrayFields = ['entities', 'roles', 'features', 'technicalRequirements', 'businessRules'];
+            for (const field of arrayFields) {
+                if (extractedRequirements[field] && !Array.isArray(extractedRequirements[field])) {
+                    return res.status(400).json({
+                        success: false,
+                        message: `Field '${field}' must be an array`
+                    });
+                }
+            }
+
+            // Validate features structure
+            if (extractedRequirements.features && extractedRequirements.features.length > 0) {
+                for (const feature of extractedRequirements.features) {
+                    if (!feature.title || typeof feature.title !== 'string') {
+                        return res.status(400).json({
+                            success: false,
+                            message: 'Each feature must have a valid title'
+                        });
+                    }
+                    if (!feature.description || typeof feature.description !== 'string') {
+                        return res.status(400).json({
+                            success: false,
+                            message: 'Each feature must have a valid description'
+                        });
+                    }
+                }
+            }
+        }
+
+        // Update the requirement
+        const updateData = {};
+        if (title !== undefined) updateData.title = title.trim();
+        if (prompt !== undefined) updateData.prompt = prompt.trim();
+        if (extractedRequirements !== undefined) updateData.extractedRequirements = extractedRequirements;
+
+        // Update the updatedAt timestamp
+        updateData.updatedAt = new Date();
+
+        const updatedRequirement = await Requirement.findByIdAndUpdate(
+            req.params.id,
+            updateData,
+            {
+                new: true,
+                runValidators: true
+            }
+        ).populate('user', 'name email');
+
+        res.status(200).json({
+            success: true,
+            message: 'Requirement updated successfully',
+            data: updatedRequirement
+        });
+
+    } catch (error) {
+        console.error('Error in updateRequirement:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to update requirement',
+            error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+        });
+    }
+};
+
 module.exports = {
     extractRequirements,
     getUserRequirements,
     getRequirementById,
+    updateRequirement,
     deleteRequirement
 };
