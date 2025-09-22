@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { FiEye, FiEyeOff, FiMail, FiLock, FiUser } from "react-icons/fi";
+import {
+  FiEye,
+  FiEyeOff,
+  FiMail,
+  FiLock,
+  FiUser,
+  FiLoader,
+} from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
@@ -9,6 +16,7 @@ function Login() {
   const { login } = useAuth();
   const [isSignup, setIsSignup] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -26,9 +34,11 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
 
     if (isSignup && formData.password !== formData.confirmPassword) {
       alert("Passwords don't match!");
+      setIsLoading(false);
       return;
     }
 
@@ -66,6 +76,8 @@ function Login() {
     } catch (error) {
       console.error("Auth error:", error);
       alert("Network error. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -174,9 +186,19 @@ function Login() {
             {/* Submit button */}
             <button
               type="submit"
-              className="w-full py-4 px-6 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-lg shadow-lg transition-all duration-200 transform hover:scale-105"
+              disabled={isLoading}
+              className="w-full py-4 px-6 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white font-semibold text-lg shadow-lg transition-all duration-200 transform hover:scale-105 disabled:hover:scale-100 flex items-center justify-center gap-2"
             >
-              {isSignup ? "Create Account" : "Sign In"}
+              {isLoading ? (
+                <>
+                  <FiLoader className="animate-spin" size={20} />
+                  Loading...
+                </>
+              ) : isSignup ? (
+                "Create Account"
+              ) : (
+                "Sign In"
+              )}
             </button>
           </form>
 
