@@ -6,10 +6,7 @@ require('dotenv').config();
 // Security middleware
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const mongoSanitize = require('express-mongo-sanitize');
-const xss = require('xss-clean');
 
-// Initialize Express app
 const app = express();
 const PORT = process.env.PORT;
 
@@ -31,10 +28,13 @@ const connectDB = async () => {
 // Connect to database
 connectDB();
 
-// Security middleware (before routes)
+// Middleware
+app.use(cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true
+}));
 app.use(helmet());
-app.use(mongoSanitize());
-app.use(xss());
+
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 300, // tune to your needs
@@ -42,14 +42,6 @@ const limiter = rateLimit({
     legacyHeaders: false,
 });
 app.use(limiter);
-
-// CORS
-app.use(cors({
-    origin: process.env.CLIENT_URL,
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
 
 // Body parser
 app.use(express.json({ limit: '10mb' }));
