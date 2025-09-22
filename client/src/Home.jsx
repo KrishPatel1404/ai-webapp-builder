@@ -96,13 +96,6 @@ function Home() {
     }
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSendClick();
-    }
-  };
-
   return (
     <div className="min-h-screen flex flex-col bg-gray-900">
       {/* Navbar */}
@@ -122,7 +115,6 @@ function Home() {
             className="w-full py-4 px-6 pr-12 rounded-lg bg-gray-800 text-white border border-gray-700 focus:border-blue-500 focus:outline-none text-lg shadow-lg transition-all duration-200 overflow-hidden resize-none"
             value={searchText}
             onChange={handleInputChange}
-            onKeyPress={handleKeyPress}
             disabled={isLoading}
           />
           <button
