@@ -7,12 +7,13 @@ import {
   FiCalendar,
   FiLayers,
 } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
 
 function Requirements() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   // const { user, isAuthenticated, loading } = useAuth();
   const { isAuthenticated, loading } = useAuth();
   const [requirements, setRequirements] = useState([]);
@@ -46,6 +47,18 @@ function Requirements() {
       fetchRequirements();
     }
   }, [isAuthenticated]);
+
+  // Check for new parameter and open modal for newest requirement
+  useEffect(() => {
+    const isNew = searchParams.get("new");
+    if (isNew === "true" && requirements.length > 0 && !showModal) {
+      // Get the newest requirement (assuming array is sorted by creation date, newest first)
+      const newestRequirement = requirements[0];
+      openModal(newestRequirement);
+      // Clear the URL parameter immediately to prevent issues
+      setSearchParams({});
+    }
+  }, [requirements, searchParams, showModal, setSearchParams]);
 
   const fetchRequirements = async () => {
     try {
@@ -476,7 +489,7 @@ function Requirements() {
           {/* Details Modal */}
           {showModal && selectedRequirement && (
             <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 p-4">
-              <div className="bg-gray-800 border border-gray-700 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="bg-gray-800 border border-gray-700 rounded-lg max-w-5xl w-full max-h-[90vh] overflow-y-auto">
                 <div className="p-6">
                   <div className="flex items-start justify-between mb-6">
                     <div className="flex-1">

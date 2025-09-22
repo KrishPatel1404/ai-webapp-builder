@@ -6,15 +6,16 @@ import {
   FiInstagram,
   FiLoader,
 } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import { useAuth } from "./context/AuthContext";
 
 function Home() {
   const [searchText, setSearchText] = useState("");
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const target = e.target;
@@ -52,7 +53,6 @@ function Home() {
   const handleSendClick = async () => {
     // Clear previous messages
     setError("");
-    setSuccess("");
 
     // Check authentication
     if (!isAuthenticated) {
@@ -84,9 +84,9 @@ function Home() {
       const data = await response.json();
 
       if (response.ok) {
-        setSuccess("Requirements extracted successfully!");
-        setSearchText(""); // Clear the input on success
         console.log("Extracted requirements:", data.data);
+        // Redirect to requirements page with new parameter
+        navigate("/requirements?new=true");
       } else {
         setError(data.message || "Failed to extract requirements.");
       }
@@ -169,15 +169,6 @@ function Home() {
           <div className="w-full max-w-2xl mt-4">
             <div className="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded-lg">
               {error}
-            </div>
-          </div>
-        )}
-
-        {/* Success message */}
-        {success && (
-          <div className="w-full max-w-2xl mt-4">
-            <div className="bg-green-900/50 border border-green-500 text-green-200 px-4 py-3 rounded-lg">
-              {success}
             </div>
           </div>
         )}
