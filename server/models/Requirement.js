@@ -13,12 +13,17 @@ const requirementSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Title is required'],
         trim: true,
-        maxlength: [150, 'Title cannot be more than 150 characters']
+        maxlength: [150, 'Title cannot be more than 150 characters'],
+        default: function () {
+            return `Requirements - ${new Date().toLocaleDateString()}`;
+        }
     },
     // The extracted structured requirements as JSON
     extractedRequirements: {
         type: mongoose.Schema.Types.Mixed,
-        required: [true, 'Extracted requirements are required']
+        required: function () {
+            return this.status !== 'processing';
+        }
     },
     // Reference to the user who created this requirement
     user: {
@@ -29,8 +34,8 @@ const requirementSchema = new mongoose.Schema({
     // Status of the requirement extraction
     status: {
         type: String,
-        enum: ['draft', 'processing', 'completed', 'failed'],
-        default: 'draft'
+        enum: ['processing', 'draft', 'completed', 'failed'],
+        default: 'processing'
     },
     // Metadata about the extraction process
     metadata: {
