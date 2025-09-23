@@ -6,6 +6,8 @@ import Home from "./Home.jsx";
 import Login from "./Login.jsx";
 import Profile from "./Profile.jsx";
 import Requirements from "./Requirements.jsx";
+import Previews from "./Previews.jsx";
+import Preview from "./Preview.jsx";
 import NotFound from "./NotFound.jsx";
 import "./style.css";
 
@@ -18,6 +20,8 @@ createRoot(document.getElementById("root")).render(
           <Route path="/login" element={<Login />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/requirements" element={<Requirements />} />
+          <Route path="/previews" element={<Previews />} />
+          <Route path="/preview/:id" element={<Preview />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>

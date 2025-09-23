@@ -1,6 +1,13 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FiInfo, FiUser, FiLogOut, FiLogIn, FiLayers } from "react-icons/fi";
+import {
+  FiInfo,
+  FiUser,
+  FiLogOut,
+  FiLogIn,
+  FiLayers,
+  FiMonitor,
+} from "react-icons/fi";
 import { useAuth } from "../context/AuthContext";
 import logo from "../assets/logo.webp";
 
@@ -38,6 +45,12 @@ function Navbar() {
                 className="flex items-center text-xl text-gray-200 hover:text-blue-300 transition-colors duration-200"
               >
                 <FiLayers className="mr-1" /> Requirements
+              </Link>
+              <Link
+                to="/previews"
+                className="flex items-center text-xl text-gray-200 hover:text-blue-300 transition-colors duration-200"
+              >
+                <FiMonitor className="mr-1" /> Previews
               </Link>
               <Link
                 to="/profile"
