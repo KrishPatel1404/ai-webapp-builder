@@ -10,7 +10,42 @@ const openai = new OpenAI({
 
 // System prompt for app generation
 const SYSTEM_PROMPT = `
+You are an expert full-stack developer. Generate a complete web app based on requirements.
 
+Return ONLY a valid JSON object with this structure:
+
+{
+    "frontend": {
+        "framework": "string (e.g., React)",
+        "files": [
+            {
+                "path": "string (e.g., 'components/Header.jsx')",
+                "content": "string - Full file code"
+            }
+        ],
+        "dependencies": ["string (e.g., 'react-router-dom')"]
+    },
+    "backend": {
+        "framework": "string (e.g., Express.js)",
+        "files": [
+            {
+                "path": "string (e.g., 'routes/auth.js')",
+                "content": "string - Full file code"
+            }
+        ],
+        "dependencies": ["string (e.g., 'bcryptjs')"]
+    },
+    "database": {
+        "type": "string (e.g., MongoDB)",
+        "schema": "string - Schema details"
+    },
+    "deployment": {
+        "platform": "string (e.g., Vercel)",
+        "instructions": "string - Deployment steps"
+    }
+}
+
+Generate production-ready code.
 `;
 
 // @desc    Generate app from requirements
@@ -69,18 +104,33 @@ Generate a complete, production-ready application that implements all the specif
 `;
 
         try {
-            // Call OpenAI API
-            const completion = await openai.chat.completions.create({
-                model: 'gpt-4',
-                messages: [
-                    { role: 'system', content: SYSTEM_PROMPT },
-                    { role: 'user', content: generationPrompt }
-                ],
-                temperature: 0.3,
-                max_tokens: 16000
+            // Call OpenAI API using gpt-5-nano with flex tier
+            const completion = await openai.responses.create({
+                model: "gpt-5-nano",
+                reasoning: { effort: "medium" },
+                input: [
+                    { role: "system", content: SYSTEM_PROMPT },
+                    { role: "user", content: generationPrompt }
+                ]
             });
 
-            const response = completion.choices[0].message.content.trim();
+            // Check if the response is valid
+            if (!completion || !completion.output_text || !completion.output) {
+                console.error('Invalid OpenAI response structure:', completion);
+                throw new Error('Invalid response from AI service');
+            }
+
+            const response = completion.output_text.trim();
+
+            if (process.env.NODE_ENV !== 'production') {
+                console.log('AI Response:\n', response);
+            }
+
+            // Check if the AI response is empty or null
+            if (!response || response.trim() === '') {
+                console.error('Empty AI response received');
+                throw new Error('Empty response from AI service');
+            }
 
             // Parse the JSON response
             let generatedCode;
@@ -88,6 +138,7 @@ Generate a complete, production-ready application that implements all the specif
                 generatedCode = JSON.parse(response);
             } catch (parseError) {
                 console.error('Failed to parse OpenAI response:', parseError);
+                console.error('Raw AI response that failed to parse:', JSON.stringify(response));
                 throw new Error('Failed to parse generated code structure');
             }
 
@@ -99,8 +150,8 @@ Generate a complete, production-ready application that implements all the specif
             app.status = 'completed';
             app.metadata = {
                 processingTime,
-                tokensUsed: completion.usage.total_tokens,
-                apiVersion: 'gpt-4',
+                tokensUsed: completion.usage?.total_tokens || 0,
+                apiVersion: 'gpt-5-nano',
                 generationPrompt
             };
 
