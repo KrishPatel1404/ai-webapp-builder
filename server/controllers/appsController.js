@@ -10,42 +10,7 @@ const openai = new OpenAI({
 
 // System prompt for app generation
 const SYSTEM_PROMPT = `
-You are an expert full-stack developer. Generate a complete web app based on requirements.
-
-Return ONLY a valid JSON object with this structure:
-
-{
-    "frontend": {
-        "framework": "string (e.g., React)",
-        "files": [
-            {
-                "path": "string (e.g., 'components/Header.jsx')",
-                "content": "string - Full file code"
-            }
-        ],
-        "dependencies": ["string (e.g., 'react-router-dom')"]
-    },
-    "backend": {
-        "framework": "string (e.g., Express.js)",
-        "files": [
-            {
-                "path": "string (e.g., 'routes/auth.js')",
-                "content": "string - Full file code"
-            }
-        ],
-        "dependencies": ["string (e.g., 'bcryptjs')"]
-    },
-    "database": {
-        "type": "string (e.g., MongoDB)",
-        "schema": "string - Schema details"
-    },
-    "deployment": {
-        "platform": "string (e.g., Vercel)",
-        "instructions": "string - Deployment steps"
-    }
-}
-
-Generate production-ready code.
+EMPTY
 `;
 
 // @desc    Generate app from requirements
