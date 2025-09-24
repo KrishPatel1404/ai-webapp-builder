@@ -355,7 +355,7 @@ function Previews() {
                   }`}
                 >
                   <div className="p-4">
-                    <div className="relative flex items-center justify-center">
+                    <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <h3 className="text-lg font-semibold text-white mb-1">
                           {preview.appName}
@@ -366,7 +366,7 @@ function Previews() {
                           </p>
                         )}
                         {preview.status === "failed" && (
-                          <div className="text-xs text-red-400 bg-red-900/20 px-2 py-1 rounded mb-7">
+                          <div className="text-xs border-red-400 bg-red-800/30 px-2 py-1 rounded-md mb-3">
                             Generation failed - Cannot access preview
                           </div>
                         )}
