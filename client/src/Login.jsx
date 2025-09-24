@@ -10,6 +10,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
+import AnimatedBackground from "./components/AnimatedBackground";
 
 function Login() {
   const navigate = useNavigate();
@@ -92,12 +93,17 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-900">
+    <div className="min-h-screen flex flex-col relative overflow-hidden bg-gray-900 text-white">
+      {/* Animated Background */}
+      <AnimatedBackground />
+
       {/* Navbar */}
-      <Navbar />
+      <div className="relative z-10">
+        <Navbar />
+      </div>
 
       {/* Main content */}
-      <div className="flex-grow flex flex-col items-center justify-center px-4">
+      <div className="flex-grow flex flex-col items-center justify-center px-4 relative z-10">
         <div className="w-full max-w-md">
           <h1 className="text-4xl font-bold text-white mb-8 text-center hover:text-blue-200 transition-colors duration-200">
             {isSignup ? "Create Account" : "Welcome Back"}

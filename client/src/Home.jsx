@@ -9,6 +9,7 @@ import {
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
+import AnimatedBackground from "./components/AnimatedBackground";
 import { useAuth } from "./context/AuthContext";
 
 // Custom hook for text shuffle effect
@@ -169,10 +170,8 @@ function Home() {
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden bg-gray-900 text-white">
-      {/* Pattern overlay on dark background */}
-      <div className="absolute inset-0 bg-gray-900">
-        <div className="absolute inset-0 bg-[radial-gradient(circle,_rgba(240,240,240,0.05)_1.5px,_transparent_1px)] [background-size:30px_30px]"></div>
-      </div>
+      {/* Animated Background */}
+      <AnimatedBackground />
 
       {/* Navbar on top */}
       <div className="relative z-10">
