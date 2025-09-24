@@ -36,7 +36,7 @@ const AnimatedBackground = ({ animate = true }) => {
 
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden">
-      <style>{floatAnimation}</style>
+      {animate && <style>{floatAnimation}</style>}
 
       {/* Base Gray Background */}
       <div className="absolute inset-0 bg-gray-900"></div>
@@ -45,29 +45,9 @@ const AnimatedBackground = ({ animate = true }) => {
       <div className="absolute inset-0 bg-[radial-gradient(circle,_rgba(240,240,240,0.05)_1.5px,_transparent_1px)] [background-size:30px_30px]"></div>
 
       {/* Animated Circles */}
-      <div className="absolute inset-0">
-        {circles.map((circle, index) => {
-          // Calculate static positions for non-animated circles
-          const staticPositions = [
-            { top: "15%", bottom: "auto" },
-            { top: "25%", bottom: "auto" },
-            { top: "35%", bottom: "auto" },
-            { top: "45%", bottom: "auto" },
-            { top: "55%", bottom: "auto" },
-            { top: "65%", bottom: "auto" },
-            { top: "75%", bottom: "auto" },
-            { top: "20%", bottom: "auto" },
-            { top: "40%", bottom: "auto" },
-            { top: "60%", bottom: "auto" },
-            { top: "30%", bottom: "auto" },
-            { top: "50%", bottom: "auto" },
-            { top: "70%", bottom: "auto" },
-            { top: "80%", bottom: "auto" },
-          ];
-          
-          const staticPos = staticPositions[index] || { top: "50%", bottom: "auto" };
-          
-          return (
+      {animate && (
+        <div className="absolute inset-0">
+          {circles.map((circle, index) => (
             <div
               key={index}
               className="absolute block bg-white/20"
@@ -75,17 +55,14 @@ const AnimatedBackground = ({ animate = true }) => {
                 left: circle.left,
                 width: `${circle.size}px`,
                 height: `${circle.size}px`,
-                bottom: animate ? "-150px" : staticPos.bottom,
-                top: animate ? "auto" : staticPos.top,
-                animation: animate ? `floatUp ${circle.duration}s linear infinite` : "none",
-                animationDelay: animate ? `${circle.delay}s` : "0s",
-                opacity: animate ? 1 : 0.2,
-                borderRadius: animate ? 0 : "50%",
+                bottom: "-150px",
+                animation: `floatUp ${circle.duration}s linear infinite`,
+                animationDelay: `${circle.delay}s`,
               }}
             />
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
