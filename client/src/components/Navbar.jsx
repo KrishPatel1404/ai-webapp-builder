@@ -50,7 +50,7 @@ function Navbar() {
                 to="/previews"
                 className="flex items-center text-xl text-gray-200 hover:text-blue-300 transition-colors duration-200"
               >
-                <FiMonitor className="mr-1" /> Previews
+                <FiMonitor className="mr-1" /> Apps
               </Link>
               <Link
                 to="/profile"
