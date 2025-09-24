@@ -1,6 +1,13 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FiInfo, FiUser, FiLogOut, FiLogIn, FiLayers } from "react-icons/fi";
+import {
+  FiHome,
+  FiInfo,
+  FiUser,
+  FiLogOut,
+  FiLogIn,
+  FiLayers,
+} from "react-icons/fi";
 import { useAuth } from "../context/AuthContext";
 import logo from "../assets/logo.webp";
 
@@ -26,8 +33,14 @@ function Navbar() {
         </Link>
         <div className="flex space-x-8">
           <a
+            href="/"
+            className="flex hover:scale-107 transition-all duration-200 items-center text-xl text-gray-200 hover:text-blue-400"
+          >
+            <FiHome className="mr-1" /> Home
+          </a>
+          <a
             href="#"
-            className="flex items-center text-xl text-gray-200 hover:text-blue-300 transition-colors duration-200"
+            className="flex hover:scale-107 transition-all duration-200 items-center text-xl text-gray-200 hover:text-blue-400"
           >
             <FiInfo className="mr-1" /> About
           </a>
@@ -35,13 +48,13 @@ function Navbar() {
             <>
               <Link
                 to="/requirements"
-                className="flex items-center text-xl text-gray-200 hover:text-blue-300 transition-colors duration-200"
+                className="flex hover:scale-107 transition-all duration-200 items-center text-xl text-gray-200 hover:text-blue-400"
               >
                 <FiLayers className="mr-1" /> Requirements
               </Link>
               <Link
                 to="/profile"
-                className="flex items-center text-xl text-gray-200 hover:text-blue-300 transition-colors duration-200"
+                className="flex hover:scale-107 transition-all duration-200 items-center text-xl text-gray-200 hover:text-blue-400"
               >
                 <FiUser className="mr-1" /> Profile
               </Link>
@@ -52,14 +65,14 @@ function Navbar() {
               {isAuthenticated ? (
                 <button
                   onClick={handleLogout}
-                  className="flex items-center text-xl text-gray-200 hover:text-blue-300 transition-colors duration-200"
+                  className="flex hover:scale-107 transition-all duration-200 items-center text-xl text-gray-200 hover:text-blue-400"
                 >
                   <FiLogOut className="mr-1" /> Logout
                 </button>
               ) : (
                 <Link
                   to="/login"
-                  className="flex items-center text-xl text-gray-200 hover:text-blue-300 transition-colors duration-200"
+                  className="flex hover:scale-107 transition-all duration-200 items-center text-xl text-gray-200 hover:text-blue-400"
                 >
                   <FiLogIn className="mr-1" /> Login
                 </Link>
