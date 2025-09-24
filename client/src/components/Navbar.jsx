@@ -21,7 +21,7 @@ function Navbar() {
   };
 
   return (
-    <nav className="bg-gray-800 px-6 py-4">
+    <nav className="bg-gray-800 px-6 py-4 shadow-2xl shadow-gray-800/60 backdrop-blur-sm relative z-20">
       <div className="flex items-center justify-between">
         <Link to="/" className="flex items-center">
           <img
