@@ -212,11 +212,64 @@ function Previews() {
     });
   };
 
-  const openModal = (preview) => {
-    setSelectedPreview(preview);
-    setError(""); // Clear any error messages
-    setSuccessMessage(""); // Clear any success messages
-    setShowModal(true);
+  const openModal = async (preview) => {
+    try {
+      setSelectedPreview(preview);
+      setError(""); // Clear any error messages
+      setSuccessMessage(""); // Clear any success messages
+      setShowModal(true);
+
+      // Fetch requirement details if requirement ID exists
+      if (preview.requirementId) {
+        const token = localStorage.getItem("token");
+
+        // Fetch apps by requirement ID and requirement details in parallel
+        const [appsResponse, requirementResponse] = await Promise.all([
+          fetch(
+            `${import.meta.env.VITE_API_URL}/api/apps/requirement/${
+              preview.requirementId
+            }`,
+            {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          ),
+          fetch(
+            `${import.meta.env.VITE_API_URL}/api/requirements/${
+              preview.requirementId
+            }`,
+            {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          ),
+        ]);
+
+        if (requirementResponse.ok) {
+          const requirementData = await requirementResponse.json();
+          // Update selectedPreview with complete requirement data
+          setSelectedPreview({
+            ...preview,
+            requirement: requirementData.data,
+          });
+        }
+
+        // Optional: You can also use the apps data if needed
+        if (appsResponse.ok) {
+          const appsData = await appsResponse.json();
+          console.log("Related apps:", appsData); // For debugging
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching requirement details:", error);
+      setError("Failed to load requirement details");
+    }
   };
 
   const closeModal = () => {
@@ -447,83 +500,95 @@ function Previews() {
                     </div>
                   )}
 
-                  {/* Preview Header */}
-                  <div className="mb-6">
-                    <div className="bg-gray-700 h-64 rounded-lg flex items-center justify-center">
-                      <div className="text-6xl font-bold text-gray-500">
-                        {selectedPreview.appName.substring(0, 2).toUpperCase()}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Description */}
+                  {/* Code */}
                   <div className="mb-6">
                     <label className="block text-lg font-semibold text-white mb-3">
-                      Description
+                      Code
                     </label>
                     <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
                       <p className="text-gray-300 whitespace-pre-wrap">
-                        {selectedPreview.description}
+                        {selectedPreview.generatedCode || "No code available."}
                       </p>
                     </div>
                   </div>
 
-                  {/* Technologies */}
-                  {selectedPreview.technologies &&
-                    selectedPreview.technologies.length > 0 && (
-                      <div className="mb-6">
-                        <label className="block text-lg font-semibold text-white mb-3">
-                          Technologies
-                        </label>
-                        <div className="flex flex-wrap gap-2">
-                          {selectedPreview.technologies.map((tech, index) => (
-                            <span
-                              key={index}
-                              className="bg-blue-900/50 border border-blue-700 text-blue-200 px-3 py-1 rounded-lg"
-                            >
-                              {tech}
-                            </span>
-                          ))}
-                        </div>
+                  {/* Requirements Details */}
+                  {selectedPreview.requirement &&
+                    selectedPreview.requirement.extractedRequirements && (
+                      <div className="space-y-6 mt-6 pt-6 border-t border-gray-700">
+                        {/* Requirement Features (if different from generated app features) */}
+                        {selectedPreview.requirement.extractedRequirements
+                          .features &&
+                          selectedPreview.requirement.extractedRequirements
+                            .features.length > 0 && (
+                            <div>
+                              <label className="block text-lg font-semibold text-white mb-3">
+                                Required Features
+                              </label>
+                              <div className="space-y-3">
+                                {selectedPreview.requirement.extractedRequirements.features.map(
+                                  (feature, index) => (
+                                    <div
+                                      key={index}
+                                      className="bg-gray-900 border border-gray-700 rounded-lg p-4"
+                                    >
+                                      <div className="flex items-start justify-between mb-2">
+                                        <h4 className="font-semibold text-white">
+                                          {feature.title}
+                                        </h4>
+                                        <div className="flex space-x-2">
+                                          {feature.category && (
+                                            <span className="bg-gray-900/50 border border-gray-700 text-gray-200 text-xs px-2 py-1 rounded">
+                                              {feature.category}
+                                            </span>
+                                          )}
+                                          {feature.userRole && (
+                                            <span className="bg-gray-900/50 border border-gray-700 text-gray-200 text-xs px-2 py-1 rounded">
+                                              {feature.userRole}
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <p className="text-gray-300 mb-2">
+                                        {feature.description}
+                                      </p>
+                                    </div>
+                                  )
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                        {/* Technical Requirements */}
+                        {selectedPreview.requirement.extractedRequirements
+                          .technicalRequirements &&
+                          selectedPreview.requirement.extractedRequirements
+                            .technicalRequirements.length > 0 && (
+                            <div>
+                              <label className="block text-lg font-semibold text-white mb-3">
+                                Technical Requirements
+                              </label>
+                              <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+                                <ul className="space-y-2">
+                                  {selectedPreview.requirement.extractedRequirements.technicalRequirements.map(
+                                    (req, index) => (
+                                      <li
+                                        key={index}
+                                        className="text-gray-300 flex items-start"
+                                      >
+                                        <span className="text-blue-400 mr-2 mt-1">
+                                          •
+                                        </span>
+                                        <span>{req}</span>
+                                      </li>
+                                    )
+                                  )}
+                                </ul>
+                              </div>
+                            </div>
+                          )}
                       </div>
                     )}
-
-                  {/* Features */}
-                  {selectedPreview.features &&
-                    selectedPreview.features.length > 0 && (
-                      <div className="mb-1">
-                        <label className="block text-lg font-semibold text-white mb-3">
-                          Features
-                        </label>
-                        <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
-                          <ul className="space-y-2">
-                            {selectedPreview.features.map((feature, index) => (
-                              <li
-                                key={index}
-                                className="text-gray-300 flex items-start"
-                              >
-                                <span className="text-blue-400 mr-2">•</span>
-                                {feature}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-                    )}
-
-                  {/* Show requirement title if available */}
-                  {selectedPreview.requirementTitle && (
-                    <div className="mb-1">
-                      <label className="block text-lg font-semibold text-white mb-3">
-                        Based on Requirement
-                      </label>
-                      <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
-                        <p className="text-gray-300">
-                          {selectedPreview.requirementTitle}
-                        </p>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
