@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FiSend,
   FiInstagram,
@@ -10,6 +10,72 @@ import {
 import { useNavigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import { useAuth } from "./context/AuthContext";
+
+// Custom hook for text shuffle effect
+const useTextShuffle = (finalText, duration = 2000) => {
+  const [displayText, setDisplayText] = useState("");
+  const [isComplete, setIsComplete] = useState(false);
+
+  useEffect(() => {
+    const characters =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+    let iteration = 0;
+    const totalIterations = Math.floor(duration / 50);
+
+    const interval = setInterval(() => {
+      setDisplayText(
+        finalText
+          .split("")
+          .map((letter, index) => {
+            if (letter === " ") return " ";
+
+            if (iteration > index * (totalIterations / finalText.length)) {
+              return finalText[index];
+            }
+
+            return characters[Math.floor(Math.random() * characters.length)];
+          })
+          .join("")
+      );
+
+      iteration++;
+
+      if (iteration > totalIterations) {
+        setDisplayText(finalText);
+        setIsComplete(true);
+        clearInterval(interval);
+      }
+    }, 50);
+
+    return () => clearInterval(interval);
+  }, [finalText, duration]);
+
+  return { displayText, isComplete };
+};
+
+// Text shuffle component
+const ShuffleText = ({ children, className, duration = 2000 }) => {
+  const text = typeof children === "string" ? children : "";
+  const { displayText, isComplete } = useTextShuffle(text, duration);
+
+  if (typeof children !== "string") {
+    return <span className={className}>{children}</span>;
+  }
+  return (
+    <span className={className}>
+      {displayText.split("").map((char, index) => (
+        <span
+          key={index}
+          className={
+            char === " " ? "" : !isComplete ? "font-mono" : "font-mono"
+          }
+        >
+          {char}
+        </span>
+      ))}
+    </span>
+  );
+};
 
 function Home() {
   const [searchText, setSearchText] = useState("");
@@ -116,9 +182,13 @@ function Home() {
       {/* Main Section */}
       <div className="flex-grow flex flex-col items-center justify-center px-4 text-center relative z-10">
         <h1 className="text-6xl md:text-6xl font-bold text-white mb-2 text-center transition-colors duration-200">
-          Build your <span className="text-blue-500">A.I App</span> in Minutes
+          <ShuffleText duration={800}>Build your </ShuffleText>
+          <span className="text-blue-500 hover:scale-107 hover:-translate-y-0.5 transition-all duration-200 ease-in-out cursor-pointer inline-block">
+            <ShuffleText duration={1200}>A.I App</ShuffleText>
+          </span>
+          <ShuffleText duration={800}> in Minutes</ShuffleText>
         </h1>
-        <h2 className="text-4xl md:text-4xl pb-4 font-semibold text-blue-200">
+        <h2 className="text-3xl md:text-3xl pb-4 font-semibold text-blue-200 hover:bg-gradient-to-r hover:from-blue-600 hover:via-blue-400 hover:to-blue-600 hover:bg-clip-text hover:text-transparent transition-all duration-300 ease-in-out cursor-pointer">
           Create • Connect • Inspire
         </h2>
 
@@ -127,17 +197,27 @@ function Home() {
         </div>
 
         {/* Input box */}
-        <div className="w-full max-w-2xl relative mb-4">
+        <div
+          className={`w-full max-w-2xl relative ${
+            error ? "animate-shake" : ""
+          }`}
+        >
           <textarea
             rows={1}
             placeholder="Describe the website you want..."
-            className="w-full py-4 px-6 pr-12 rounded-2xl bg-gray-800 text-white border border-gray-700 focus:border-blue-500 focus:outline-none text-lg shadow-lg transition-all duration-200 overflow-hidden resize-none"
+            className={`w-full py-4 px-6 pr-12 rounded-2xl bg-gray-800 text-white border focus:outline-none text-lg shadow-lg transition-all duration-200 overflow-hidden resize-none ${
+              error
+                ? "border-red-500/40"
+                : "border-gray-700 focus:border-blue-500"
+            }`}
             value={searchText}
             onChange={handleInputChange}
             disabled={isLoading}
           />
           <button
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-blue-500 hover:text-blue-300 transition-colors duration-200 p-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`absolute right-4 top-1/2 transform -translate-y-1/2 ${
+              error ? "text-red-400/50" : "text-blue-500 hover:text-blue-300"
+            } transition-colors duration-200 p-2 disabled:opacity-50 disabled:cursor-not-allowed`}
             onClick={handleSendClick}
             disabled={isLoading}
           >
@@ -150,7 +230,7 @@ function Home() {
         </div>
 
         {/* Character count */}
-        <div className="w-full max-w-2xl mt-2">
+        <div className="w-full max-w-2xl mr-1">
           <p
             className={`text-sm text-right ${
               searchText.length > 1500
@@ -165,15 +245,26 @@ function Home() {
         </div>
 
         {/* Error message */}
-        {error && (
-          <div className="w-full max-w-2xl mt-4">
-            <div className="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded-lg">
-              {error}
+        <div
+          className={`w-full max-w-2xl transition-all duration-200 ${
+            error ? "mt-4" : "mt-0"
+          }`}
+        >
+          {error && (
+            <div className="w-full max-w-xl mx-auto animate-fade-slide-down">
+              <div className="bg-red-900/20 border border-red-500/20 text-red-200 px-4 py-2 rounded-lg transition-all duration-200">
+                {error}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
-        <p className="text-gray-400 mb-6 mt-2 text-center max-w-md">
+        {/* Text below - moves down when error appears */}
+        <p
+          className={`text-gray-400 text-center max-w-md transition-all duration-200 ${
+            error ? "mt-4 mb-6" : "mt-2 mb-6"
+          }`}
+        >
           Lorem ipsum dolor sit amet consectetur adipiscing elit. Dolor sit amet
           consectetur adipiscing elit quisque faucibus.
         </p>
@@ -192,7 +283,7 @@ function Home() {
           >
             <FiInstagram
               size={24}
-              className="text-white hover:text-blue-400 cursor-pointer transition"
+              className="text-white hover:text-blue-400 hover:scale-110 hover:-translate-y-1 cursor-pointer transition"
             />
           </a>
           <a
@@ -202,17 +293,17 @@ function Home() {
           >
             <FiGithub
               size={24}
-              className="text-white hover:text-blue-400 cursor-pointer transition"
+              className="text-white hover:text-blue-400 hover:scale-110 hover:-translate-y-1 cursor-pointer transition"
             />
           </a>
           <a
-            href="www.linkedin.com/in/krish-patel-844834234"
+            href="https://www.linkedin.com/in/krish-patel-844834234"
             target="_blank"
             rel="noopener noreferrer"
           >
             <FiLinkedin
               size={24}
-              className="text-white hover:text-blue-400 cursor-pointer transition"
+              className="text-white hover:text-blue-400 hover:scale-110 hover:-translate-y-1 cursor-pointer transition"
             />
           </a>
         </div>
