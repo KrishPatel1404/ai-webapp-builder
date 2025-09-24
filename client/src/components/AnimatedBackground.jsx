@@ -1,6 +1,6 @@
 import React from "react";
 
-const AnimatedBackground = () => {
+const AnimatedBackground = ({ animate = true }) => {
   // Create an array of circles with different properties, positioned only on left (0-25%) and right (75-100%) sides
   const circles = [
     { left: "5%", size: 80, delay: 0, duration: 22 },
@@ -46,20 +46,45 @@ const AnimatedBackground = () => {
 
       {/* Animated Circles */}
       <div className="absolute inset-0">
-        {circles.map((circle, index) => (
-          <div
-            key={index}
-            className="absolute block bg-white/20"
-            style={{
-              left: circle.left,
-              width: `${circle.size}px`,
-              height: `${circle.size}px`,
-              bottom: "-150px",
-              animation: `floatUp ${circle.duration}s linear infinite`,
-              animationDelay: `${circle.delay}s`,
-            }}
-          />
-        ))}
+        {circles.map((circle, index) => {
+          // Calculate static positions for non-animated circles
+          const staticPositions = [
+            { top: "15%", bottom: "auto" },
+            { top: "25%", bottom: "auto" },
+            { top: "35%", bottom: "auto" },
+            { top: "45%", bottom: "auto" },
+            { top: "55%", bottom: "auto" },
+            { top: "65%", bottom: "auto" },
+            { top: "75%", bottom: "auto" },
+            { top: "20%", bottom: "auto" },
+            { top: "40%", bottom: "auto" },
+            { top: "60%", bottom: "auto" },
+            { top: "30%", bottom: "auto" },
+            { top: "50%", bottom: "auto" },
+            { top: "70%", bottom: "auto" },
+            { top: "80%", bottom: "auto" },
+          ];
+          
+          const staticPos = staticPositions[index] || { top: "50%", bottom: "auto" };
+          
+          return (
+            <div
+              key={index}
+              className="absolute block bg-white/20"
+              style={{
+                left: circle.left,
+                width: `${circle.size}px`,
+                height: `${circle.size}px`,
+                bottom: animate ? "-150px" : staticPos.bottom,
+                top: animate ? "auto" : staticPos.top,
+                animation: animate ? `floatUp ${circle.duration}s linear infinite` : "none",
+                animationDelay: animate ? `${circle.delay}s` : "0s",
+                opacity: animate ? 1 : 0.2,
+                borderRadius: animate ? 0 : "50%",
+              }}
+            />
+          );
+        })}
       </div>
     </div>
   );
