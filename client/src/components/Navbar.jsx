@@ -32,18 +32,18 @@ function Navbar() {
           <span className="sr-only">Home</span>
         </Link>
         <div className="flex space-x-8">
-          <a
-            href="/"
+          <Link
+            to="/"
             className="flex hover:scale-107 transition-all duration-200 items-center text-xl text-gray-200 hover:text-blue-400"
           >
             <FiHome className="mr-1" /> Home
-          </a>
-          <a
-            href="#"
+          </Link>
+          <Link
+            to="/about"
             className="flex hover:scale-107 transition-all duration-200 items-center text-xl text-gray-200 hover:text-blue-400"
           >
             <FiInfo className="mr-1" /> About
-          </a>
+          </Link>
           {isAuthenticated ? (
             <>
               <Link
