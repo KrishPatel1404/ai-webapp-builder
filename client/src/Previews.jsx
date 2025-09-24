@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   FiClock,
   FiCheckCircle,
@@ -30,101 +30,149 @@ function Previews() {
     }
   }, [isAuthenticated, loading, navigate]);
 
-  // Set dummy data immediately
-  useEffect(() => {
-    if (isAuthenticated) {
-      // Dummy data for previews
-      const dummyPreviews = [
-        {
-          _id: "prev1",
-          appName: "Task Manager Pro",
-          description:
-            "A professional task management application with collaboration features",
-          technologies: ["React", "Node.js", "MongoDB"],
-          features: [
-            "Task creation and management",
-            "Team collaboration",
-            "Calendar integration",
-            "Notifications",
-            "Analytics dashboard",
-          ],
-          demoUrl: "https://example.com/demo/taskmanager",
-          createdAt: "2025-09-20T14:30:00Z",
-          status: "completed",
-          requirementId: "req1",
-        },
-        {
-          _id: "prev2",
-          appName: "HealthTracker",
-          description:
-            "Health and fitness tracking application with personalized goals",
-          technologies: ["React Native", "Express", "Firebase"],
-          features: [
-            "Activity tracking",
-            "Nutrition planning",
-            "Goal setting",
-            "Progress visualization",
-          ],
-          demoUrl: "https://example.com/demo/healthtracker",
-          createdAt: "2025-09-22T10:15:00Z",
-          status: "processing",
-          requirementId: "req2",
-        },
-        {
-          _id: "prev3",
-          appName: "E-commerce Platform",
-          description:
-            "Complete online store solution with inventory management",
-          technologies: ["Next.js", "GraphQL", "PostgreSQL"],
-          features: [
-            "Product catalog",
-            "Shopping cart",
-            "Payment integration",
-            "Order tracking",
-            "Admin dashboard",
-          ],
-          demoUrl: "https://example.com/demo/ecommerce",
-          createdAt: "2025-09-18T09:45:00Z",
-          status: "completed",
-          requirementId: "req3",
-        },
-        {
-          _id: "prev4",
-          appName: "Learning Management System",
-          description:
-            "Educational platform for online courses and student management",
-          technologies: ["Vue.js", "Django", "MySQL"],
-          features: [
-            "Course creation",
-            "Assignment management",
-            "Quiz system",
-            "Discussion forums",
-            "Progress tracking",
-          ],
-          demoUrl: "https://example.com/demo/lms",
-          createdAt: "2025-09-15T16:20:00Z",
-          status: "failed",
-          requirementId: "req4",
-        },
-      ];
+  const fetchApps = useCallback(async () => {
+    try {
+      setLoadingPreviews(true);
+      setError("");
 
-      // Set previews immediately without timer
-      setPreviews(dummyPreviews);
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/apps`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          // Token is invalid, redirect to login
+          navigate("/login");
+          return;
+        }
+        throw new Error("Failed to fetch apps");
+      }
+
+      const data = await response.json();
+
+      // Transform API data to match the component's expected format
+      const transformedApps = data.apps.map((app) => ({
+        _id: app.id,
+        appName: app.name,
+        description: app.description || "No description provided",
+        status: app.status,
+        createdAt: app.createdAt,
+        requirementId: app.requirement?._id,
+        requirementTitle: app.requirement?.title,
+        technologies: extractTechnologies(
+          app.requirement?.extractedRequirements
+        ),
+        features: extractFeatures(app.requirement?.extractedRequirements),
+      }));
+
+      setPreviews(transformedApps);
+      setLoadingPreviews(false);
+    } catch (error) {
+      console.error("Error fetching apps:", error);
+      setError("Failed to load your apps. Please try again.");
       setLoadingPreviews(false);
     }
-  }, [isAuthenticated]);
+  }, [navigate]);
+
+  // Helper function to extract technologies from requirements
+  const extractTechnologies = (extractedRequirements) => {
+    if (!extractedRequirements) return [];
+
+    const techs = [];
+    if (extractedRequirements.technicalRequirements) {
+      techs.push(...extractedRequirements.technicalRequirements);
+    }
+    if (extractedRequirements.frontend) {
+      techs.push(extractedRequirements.frontend);
+    }
+    if (extractedRequirements.backend) {
+      techs.push(extractedRequirements.backend);
+    }
+    if (extractedRequirements.database) {
+      techs.push(extractedRequirements.database);
+    }
+
+    return [...new Set(techs)].slice(0, 5); // Remove duplicates and limit to 5
+  };
+
+  // Helper function to extract features from requirements
+  const extractFeatures = (extractedRequirements) => {
+    if (!extractedRequirements) return [];
+
+    const features = [];
+    if (
+      extractedRequirements.features &&
+      Array.isArray(extractedRequirements.features)
+    ) {
+      features.push(...extractedRequirements.features);
+    }
+    if (
+      extractedRequirements.functionalRequirements &&
+      Array.isArray(extractedRequirements.functionalRequirements)
+    ) {
+      features.push(...extractedRequirements.functionalRequirements);
+    }
+
+    return features.slice(0, 5); // Limit to 5 features
+  };
+
+  // Fetch user's apps from API
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchApps();
+    }
+  }, [isAuthenticated, fetchApps]);
 
   const deletePreview = async (id) => {
     try {
-      // In a real app, this would make an API call
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/apps/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          navigate("/login");
+          return;
+        }
+        throw new Error("Failed to delete app");
+      }
+
+      // Remove the deleted app from local state
       const updatedPreviews = previews.filter((prev) => prev._id !== id);
       setPreviews(updatedPreviews);
       setDeleteConfirm(null);
-      setSuccessMessage("Preview deleted successfully!");
-      // Removed timeout for clearing message
+      setSuccessMessage("App deleted successfully!");
+
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccessMessage(""), 3000);
     } catch (error) {
-      console.error("Error deleting preview:", error);
-      setError("Failed to delete preview");
+      console.error("Error deleting app:", error);
+      setError("Failed to delete app. Please try again.");
+      setDeleteConfirm(null);
+
+      // Clear error message after 3 seconds
+      setTimeout(() => setError(""), 3000);
     }
   };
 
@@ -132,7 +180,7 @@ function Previews() {
     switch (status) {
       case "completed":
         return <FiCheckCircle className="text-green-500" />;
-      case "processing":
+      case "generating":
         return <FiClock className="text-yellow-500 animate-spin" />;
       case "failed":
         return <FiXCircle className="text-red-500" />;
@@ -145,12 +193,12 @@ function Previews() {
     switch (status) {
       case "completed":
         return "Completed";
-      case "processing":
-        return "Processing";
+      case "generating":
+        return "Generating";
       case "failed":
         return "Failed";
       default:
-        return "Draft";
+        return "Unknown";
     }
   };
 
@@ -206,7 +254,7 @@ function Previews() {
               <p className="text-gray-400">
                 View generated application previews and demos
               </p>
-            </div>
+            </div>{" "}
           </div>
 
           <hr className="border-gray-600 my-4" />
@@ -223,59 +271,52 @@ function Previews() {
             </div>
           )}
 
-          {previews.length === 0 ? (
+          {!loadingPreviews && previews.length === 0 ? (
             <div className="text-center py-12">
               <FiMonitor className="mx-auto h-16 w-16 text-gray-600 mb-4" />
               <h3 className="text-xl font-semibold text-gray-400 mb-2">
-                No app previews found
+                No apps found
               </h3>
               <p className="text-gray-500 mb-6">
-                You haven't generated any application previews yet. Generate
-                them from your requirements.
+                You haven't generated any applications yet. Create requirements
+                and generate apps to see them here.
               </p>
-              <button
-                onClick={() => navigate("/requirements")}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200"
-              >
-                View Requirements
-              </button>
             </div>
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {previews.map((preview) => (
                 <div
                   key={preview._id}
-                  onClick={() => openModal(preview)}
-                  className="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden hover:border-gray-600 transition-colors duration-200 cursor-pointer"
+                  onClick={() =>
+                    preview.status !== "failed" && openModal(preview)
+                  }
+                  title={
+                    preview.status === "failed"
+                      ? "App generation failed - Cannot preview"
+                      : "Click to view details"
+                  }
+                  className={`bg-gray-800 border border-gray-700 rounded-lg overflow-hidden transition-colors duration-200 ${
+                    preview.status !== "failed"
+                      ? "hover:border-gray-600 cursor-pointer"
+                      : "cursor-not-allowed opacity-75"
+                  }`}
                 >
-                  <div className="h-40 bg-gray-700 relative flex items-center justify-center">
-                    <div className="text-3xl font-bold text-gray-500">
-                      {preview.appName.substring(0, 2).toUpperCase()}
-                    </div>
-                    <div className="absolute top-2 right-2 flex space-x-2">
-                      <span
-                        className={`text-xs px-2 py-1 rounded ${
-                          preview.status === "completed"
-                            ? "bg-green-900/80 text-green-200"
-                            : preview.status === "processing"
-                            ? "bg-yellow-900/80 text-yellow-200"
-                            : "bg-red-900/80 text-red-200"
-                        }`}
-                      >
-                        {getStatusText(preview.status)}
-                      </span>
-                    </div>
-                  </div>
-
                   <div className="p-4">
-                    <div className="flex items-start justify-between">
+                    <div className="relative flex items-center justify-center">
                       <div className="flex-1">
                         <h3 className="text-lg font-semibold text-white mb-1">
                           {preview.appName}
                         </h3>
-                        <p className="text-sm text-gray-400 mb-3 line-clamp-2">
-                          {preview.description}
-                        </p>
+                        {preview.status != "failed" && (
+                          <p className="text-sm text-gray-400 mb-3 line-clamp-2">
+                            {preview.description}
+                          </p>
+                        )}
+                        {preview.status === "failed" && (
+                          <div className="text-xs text-red-400 bg-red-900/20 px-2 py-1 rounded mb-7">
+                            Generation failed - Cannot access preview
+                          </div>
+                        )}
                       </div>
                       <div className="flex space-x-2">
                         <button
@@ -291,46 +332,22 @@ function Previews() {
                       </div>
                     </div>
 
-                    <div className="space-y-2 mb-2">
-                      <div>
-                        <span className="text-xs text-gray-500 uppercase">
-                          Technologies:
-                        </span>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {preview.technologies
-                            .slice(0, 3)
-                            .map((tech, index) => (
-                              <span
-                                key={index}
-                                className="bg-gray-700 text-gray-300 text-xs px-2 py-1 rounded"
-                              >
-                                {tech}
-                              </span>
-                            ))}
-                          {preview.technologies.length > 3 && (
-                            <span className="text-xs text-gray-500">
-                              +{preview.technologies.length - 3} more
-                            </span>
-                          )}
-                        </div>
+                    <div className="flex items-center justify-between text-xs text-gray-500 mt-3">
+                      <div className="flex items-center">
+                        <FiCalendar className="mr-1" />
+                        {formatDate(preview.createdAt)}
                       </div>
-
-                      {preview.features?.length > 0 && (
-                        <div>
-                          <span className="text-xs text-gray-500 uppercase">
-                            Features:
-                          </span>
-                          <p className="text-sm text-gray-400">
-                            {preview.features.length} feature
-                            {preview.features.length !== 1 ? "s" : ""} included
-                          </p>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex items-center text-xs text-gray-500 mt-3">
-                      <FiCalendar className="mr-1" />
-                      {formatDate(preview.createdAt)}
+                      <span
+                        className={`text-xs px-2 py-1 rounded ${
+                          preview.status === "completed"
+                            ? "bg-green-900/80 text-green-200"
+                            : preview.status === "generating"
+                            ? "bg-yellow-900/80 text-yellow-200"
+                            : "bg-red-900/80 text-red-200"
+                        }`}
+                      >
+                        {getStatusText(preview.status)}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -452,41 +469,61 @@ function Previews() {
                   </div>
 
                   {/* Technologies */}
-                  <div className="mb-6">
-                    <label className="block text-lg font-semibold text-white mb-3">
-                      Technologies
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedPreview.technologies.map((tech, index) => (
-                        <span
-                          key={index}
-                          className="bg-blue-900/50 border border-blue-700 text-blue-200 px-3 py-1 rounded-lg"
-                        >
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
+                  {selectedPreview.technologies &&
+                    selectedPreview.technologies.length > 0 && (
+                      <div className="mb-6">
+                        <label className="block text-lg font-semibold text-white mb-3">
+                          Technologies
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedPreview.technologies.map((tech, index) => (
+                            <span
+                              key={index}
+                              className="bg-blue-900/50 border border-blue-700 text-blue-200 px-3 py-1 rounded-lg"
+                            >
+                              {tech}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                   {/* Features */}
-                  <div className="mb-1">
-                    <label className="block text-lg font-semibold text-white mb-3">
-                      Features
-                    </label>
-                    <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
-                      <ul className="space-y-2">
-                        {selectedPreview.features.map((feature, index) => (
-                          <li
-                            key={index}
-                            className="text-gray-300 flex items-start"
-                          >
-                            <span className="text-blue-400 mr-2">•</span>
-                            {feature}
-                          </li>
-                        ))}
-                      </ul>
+                  {selectedPreview.features &&
+                    selectedPreview.features.length > 0 && (
+                      <div className="mb-1">
+                        <label className="block text-lg font-semibold text-white mb-3">
+                          Features
+                        </label>
+                        <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+                          <ul className="space-y-2">
+                            {selectedPreview.features.map((feature, index) => (
+                              <li
+                                key={index}
+                                className="text-gray-300 flex items-start"
+                              >
+                                <span className="text-blue-400 mr-2">•</span>
+                                {feature}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    )}
+
+                  {/* Show requirement title if available */}
+                  {selectedPreview.requirementTitle && (
+                    <div className="mb-1">
+                      <label className="block text-lg font-semibold text-white mb-3">
+                        Based on Requirement
+                      </label>
+                      <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+                        <p className="text-gray-300">
+                          {selectedPreview.requirementTitle}
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
