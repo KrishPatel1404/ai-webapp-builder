@@ -106,8 +106,32 @@ function Preview() {
               <script src="https://unpkg.com/@mui/material@5.15.0/umd/material-ui.development.js"></script>
               <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
               <style>
-                body { margin: 0; padding: 16px; font-family: 'Roboto', sans-serif; }
+                body { 
+                  margin: 0; 
+                  padding: 16px; 
+                  font-family: 'Roboto', sans-serif;
+                  ${
+                    isMobile
+                      ? `
+                    transform: scale(0.8);
+                    transform-origin: top left;
+                    width: 133.33%;
+                    height: 133.33%;
+                  `
+                      : ""
+                  }
+                }
                 * { box-sizing: border-box; }
+                ${
+                  isMobile
+                    ? `
+                  #root {
+                    width: 100%;
+                    min-height: 100vh;
+                  }
+                `
+                    : ""
+                }
               </style>
             </head>
             <body>
@@ -129,7 +153,7 @@ function Preview() {
     if (generatedCode && iframeRef.current && !previewLoaded) {
       loadPreview();
     }
-  }, [generatedCode, previewLoaded]);
+  }, [generatedCode, previewLoaded, isMobile]);
 
   if (loading || loadingApp) {
     return (

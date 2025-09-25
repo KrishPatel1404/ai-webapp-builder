@@ -157,7 +157,9 @@ function Navbar() {
       {isMobile && (
         <div
           className={`transition-all duration-300 ease-in-out overflow-hidden ${
-            isMobileMenuOpen ? "max-h-95 opacity-100 mt-2" : "max-h-0 opacity-0"
+            isMobileMenuOpen
+              ? "max-h-95   opacity-100 mt-2"
+              : "max-h-0 opacity-0"
           }`}
         >
           <div className="bg-gray-700 rounded-lg shadow-lg">
