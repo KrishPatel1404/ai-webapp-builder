@@ -83,7 +83,7 @@ ${JSON.stringify(requirement.extractedRequirements, null, 2)}
 
 Using simple code and checking it over. Use MaterialUI components to make a mock web-app from the template given. And ensure more than basic functionality. Do your best to include advanced lists, checkboxes, saving data and anything advanced where possible. Think about what features would be requirements even if not directly in the requirements list.
 
-ENSURE TO ALWAYS STICK TO MATERIAL UI AND THE TEMPLATE GIVEN`;
+ENSURE TO ALWAYS STICK TO MATERIAL UI AND THE TEMPLATE GIVEN. DO NOT USE ANY OTHER LIBRARIES OR EXTENRAL RESOURCES. DO NOT USE ANY APIS`;
 
         try {
             // Log the prompt being sent to OpenAI (for debugging)
