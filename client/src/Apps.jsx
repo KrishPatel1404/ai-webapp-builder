@@ -306,7 +306,9 @@ function Apps() {
   };
 
   const viewApp = (appId) => {
-    navigate(`/preview/${appId}`);
+    // Open preview in a new tab
+    const previewUrl = `${window.location.origin}/preview/${appId}`;
+    window.open(previewUrl, "_blank");
   };
 
   if (loading || loadingApps) {
@@ -521,7 +523,7 @@ function Apps() {
                               onClick={() => viewApp(selectedApp._id)}
                               className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center"
                             >
-                              <FiExternalLink className="mr-2" /> View Demo
+                              <FiExternalLink className="mr-2" /> View Preview
                             </button>
                           )}
                           <button
