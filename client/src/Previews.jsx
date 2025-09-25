@@ -22,6 +22,7 @@ function Previews() {
   const [selectedApp, setSelectedApp] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [loadingAppDetails, setLoadingAppDetails] = useState(false);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -166,27 +167,65 @@ function Previews() {
     });
   };
 
-  const openAppModal = async (app) => {
+  const openAppModal = async (appId) => {
     try {
-      setSelectedApp(app);
-      console.log({ app });
+      setLoadingAppDetails(true);
       setError(""); // Clear any error messages
       setSuccessMessage(""); // Clear any success messages
       setShowModal(true);
+      setSelectedApp(null); // Clear previous app data
 
-      // Fetch requirement details if requirement ID exists
-      if (app.requirementId) {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          setError("Authentication token not found");
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Authentication token not found");
+        setLoadingAppDetails(false);
+        return;
+      }
+
+      // Fetch complete app data by ID
+      const appResponse = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/apps/${appId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!appResponse.ok) {
+        if (appResponse.status === 401) {
+          navigate("/login");
           return;
         }
+        throw new Error(
+          `HTTP ${appResponse.status}: Failed to fetch app details`
+        );
+      }
 
+      const appData = await appResponse.json();
+      const app = appData.app;
+
+      // Set the app data
+      setSelectedApp({
+        _id: app.id,
+        appName: app.name,
+        description: app.description,
+        status: app.status,
+        createdAt: app.createdAt,
+        generatedCode: app.generatedCode?.code || "No code available.",
+        requirement: app.requirement,
+        errorMessage: app.errorMessage,
+        metadata: app.metadata,
+      });
+
+      // Fetch requirement details if requirement exists
+      if (app.requirement && app.requirement._id) {
         try {
-          // Only fetch requirement details - remove unused apps fetch
           const requirementResponse = await fetch(
             `${import.meta.env.VITE_API_URL}/api/requirements/${
-              app.requirementId
+              app.requirement._id
             }`,
             {
               method: "GET",
@@ -209,18 +248,22 @@ function Previews() {
             navigate("/login");
             return;
           } else {
-            throw new Error(
-              `HTTP ${requirementResponse.status}: Failed to fetch requirement details`
+            console.warn(
+              `Failed to fetch requirement details: HTTP ${requirementResponse.status}`
             );
+            // Don't throw error here, as app data is still valid without requirement details
           }
         } catch (fetchError) {
           console.error("Error fetching requirement details:", fetchError);
-          setError("Failed to load requirement details. Please try again.");
+          // Don't set error here, as app data is still valid without requirement details
         }
       }
+
+      setLoadingAppDetails(false);
     } catch (error) {
       console.error("Error opening app modal:", error);
-      setError("Failed to open app details");
+      setError("Failed to load app details. Please try again.");
+      setLoadingAppDetails(false);
     }
   };
 
@@ -292,7 +335,9 @@ function Previews() {
               {apps.map((app) => (
                 <div
                   key={app._id}
-                  onClick={() => app.status !== "failed" && openAppModal(app)}
+                  onClick={() =>
+                    app.status !== "failed" && openAppModal(app._id)
+                  }
                   title={
                     app.status === "failed"
                       ? "App generation failed - Cannot preview"
@@ -388,38 +433,20 @@ function Previews() {
           )}
 
           {/* Details Modal */}
-          {showModal && selectedApp && (
+          {showModal && (
             <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 p-4">
               <div className="bg-gray-800 border border-gray-700 rounded-lg max-w-5xl w-full max-h-[90vh] overflow-y-auto">
                 <div className="p-6">
-                  <div className="flex items-start justify-between mb-6">
-                    <div className="flex-1">
-                      <h2 className="text-2xl font-bold text-white mb-2">
-                        {selectedApp.appName}
-                      </h2>
-                      <div className="flex items-center space-x-2 mt-2">
-                        {getStatusIcon(selectedApp.status)}
-                        <span className="text-gray-400">
-                          {getStatusText(selectedApp.status)}
-                        </span>
-                        <span className="text-gray-500">•</span>
-                        <span className="text-gray-400">
-                          {formatDate(selectedApp.createdAt)}
-                        </span>
+                  {loadingAppDetails ? (
+                    // Loading State
+                    <div className="flex items-center justify-center py-12">
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                        <p className="text-gray-400">Loading app details...</p>
                       </div>
-                    </div>
-                    <div className="flex space-x-2">
-                      {selectedApp.status === "completed" && (
-                        <button
-                          onClick={() => viewApp(selectedApp._id)}
-                          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center"
-                        >
-                          <FiExternalLink className="mr-2" /> View Demo
-                        </button>
-                      )}
                       <button
                         onClick={closeModal}
-                        className="text-gray-400 hover:text-white transition-colors duration-200"
+                        className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors duration-200"
                       >
                         <svg
                           className="w-6 h-6"
@@ -436,109 +463,171 @@ function Previews() {
                         </svg>
                       </button>
                     </div>
-                  </div>
-
-                  {/* Success and Error Messages */}
-                  {successMessage && (
-                    <div className="mb-4 bg-green-900/50 border border-green-500 text-green-200 px-4 py-3 rounded-lg">
-                      {successMessage}
-                    </div>
-                  )}
-                  {error && (
-                    <div className="mb-4 bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded-lg">
-                      {error}
-                    </div>
-                  )}
-
-                  {/* Code */}
-                  <div className="mb-6">
-                    <label className="block text-lg font-semibold text-white mb-3">
-                      Code
-                    </label>
-                    <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
-                      <p className="text-gray-300 whitespace-pre-wrap">
-                        {selectedApp.generatedCode || "No code available."}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Requirements Details */}
-                  {selectedApp.requirement &&
-                    selectedApp.requirement.extractedRequirements && (
-                      <div className="space-y-6 mt-6 pt-6 border-t border-gray-700">
-                        {/* Requirement Features (if different from generated app features) */}
-                        {selectedApp.requirement.extractedRequirements
-                          .features &&
-                          selectedApp.requirement.extractedRequirements.features
-                            .length > 0 && (
-                            <div>
-                              <label className="block text-lg font-semibold text-white mb-3">
-                                Required Features
-                              </label>
-                              <div className="space-y-3">
-                                {selectedApp.requirement.extractedRequirements.features.map(
-                                  (feature, index) => (
-                                    <div
-                                      key={index}
-                                      className="bg-gray-900 border border-gray-700 rounded-lg p-4"
-                                    >
-                                      <div className="flex items-start justify-between mb-2">
-                                        <h4 className="font-semibold text-white">
-                                          {feature.title}
-                                        </h4>
-                                        <div className="flex space-x-2">
-                                          {feature.category && (
-                                            <span className="bg-gray-900/50 border border-gray-700 text-gray-200 text-xs px-2 py-1 rounded">
-                                              {feature.category}
-                                            </span>
-                                          )}
-                                          {feature.userRole && (
-                                            <span className="bg-gray-900/50 border border-gray-700 text-gray-200 text-xs px-2 py-1 rounded">
-                                              {feature.userRole}
-                                            </span>
-                                          )}
-                                        </div>
-                                      </div>
-                                      <p className="text-gray-300 mb-2">
-                                        {feature.description}
-                                      </p>
-                                    </div>
-                                  )
-                                )}
-                              </div>
-                            </div>
+                  ) : selectedApp ? (
+                    // App Content
+                    <>
+                      <div className="flex items-start justify-between mb-6">
+                        <div className="flex-1">
+                          <h2 className="text-2xl font-bold text-white mb-2">
+                            {selectedApp.appName}
+                          </h2>
+                          <div className="flex items-center space-x-2 mt-2">
+                            {getStatusIcon(selectedApp.status)}
+                            <span className="text-gray-400">
+                              {getStatusText(selectedApp.status)}
+                            </span>
+                            <span className="text-gray-500">•</span>
+                            <span className="text-gray-400">
+                              {formatDate(selectedApp.createdAt)}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex space-x-2">
+                          {selectedApp.status === "completed" && (
+                            <button
+                              onClick={() => viewApp(selectedApp._id)}
+                              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center"
+                            >
+                              <FiExternalLink className="mr-2" /> View Demo
+                            </button>
                           )}
-
-                        {/* Technical Requirements */}
-                        {selectedApp.requirement.extractedRequirements
-                          .technicalRequirements &&
-                          selectedApp.requirement.extractedRequirements
-                            .technicalRequirements.length > 0 && (
-                            <div>
-                              <label className="block text-lg font-semibold text-white mb-3">
-                                Technical Requirements
-                              </label>
-                              <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
-                                <ul className="space-y-2">
-                                  {selectedApp.requirement.extractedRequirements.technicalRequirements.map(
-                                    (req, index) => (
-                                      <li
-                                        key={index}
-                                        className="text-gray-300 flex items-start"
-                                      >
-                                        <span className="text-blue-400 mr-2 mt-1">
-                                          •
-                                        </span>
-                                        <span>{req}</span>
-                                      </li>
-                                    )
-                                  )}
-                                </ul>
-                              </div>
-                            </div>
-                          )}
+                          <button
+                            onClick={closeModal}
+                            className="text-gray-400 hover:text-white transition-colors duration-200"
+                          >
+                            <svg
+                              className="w-6 h-6"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          </button>
+                        </div>
                       </div>
-                    )}
+
+                      {/* Success and Error Messages */}
+                      {successMessage && (
+                        <div className="mb-4 bg-green-900/50 border border-green-500 text-green-200 px-4 py-3 rounded-lg">
+                          {successMessage}
+                        </div>
+                      )}
+                      {error && (
+                        <div className="mb-4 bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded-lg">
+                          {error}
+                        </div>
+                      )}
+
+                      {/* Code */}
+                      <div className="mb-6">
+                        <label className="block text-lg font-semibold text-white mb-3">
+                          Code
+                        </label>
+                        <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+                          <p className="text-gray-300 whitespace-pre-wrap">
+                            {selectedApp.generatedCode || "No code available."}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Requirements Details */}
+                      {selectedApp.requirement &&
+                        selectedApp.requirement.extractedRequirements && (
+                          <div className="space-y-6 mt-6 pt-6 border-t border-gray-700">
+                            {/* Requirement Features (if different from generated app features) */}
+                            {selectedApp.requirement.extractedRequirements
+                              .features &&
+                              selectedApp.requirement.extractedRequirements
+                                .features.length > 0 && (
+                                <div>
+                                  <label className="block text-lg font-semibold text-white mb-3">
+                                    Required Features
+                                  </label>
+                                  <div className="space-y-3">
+                                    {selectedApp.requirement.extractedRequirements.features.map(
+                                      (feature, index) => (
+                                        <div
+                                          key={index}
+                                          className="bg-gray-900 border border-gray-700 rounded-lg p-4"
+                                        >
+                                          <div className="flex items-start justify-between mb-2">
+                                            <h4 className="font-semibold text-white">
+                                              {feature.title}
+                                            </h4>
+                                            <div className="flex space-x-2">
+                                              {feature.category && (
+                                                <span className="bg-gray-900/50 border border-gray-700 text-gray-200 text-xs px-2 py-1 rounded">
+                                                  {feature.category}
+                                                </span>
+                                              )}
+                                              {feature.userRole && (
+                                                <span className="bg-gray-900/50 border border-gray-700 text-gray-200 text-xs px-2 py-1 rounded">
+                                                  {feature.userRole}
+                                                </span>
+                                              )}
+                                            </div>
+                                          </div>
+                                          <p className="text-gray-300 mb-2">
+                                            {feature.description}
+                                          </p>
+                                        </div>
+                                      )
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+
+                            {/* Technical Requirements */}
+                            {selectedApp.requirement.extractedRequirements
+                              .technicalRequirements &&
+                              selectedApp.requirement.extractedRequirements
+                                .technicalRequirements.length > 0 && (
+                                <div>
+                                  <label className="block text-lg font-semibold text-white mb-3">
+                                    Technical Requirements
+                                  </label>
+                                  <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+                                    <ul className="space-y-2">
+                                      {selectedApp.requirement.extractedRequirements.technicalRequirements.map(
+                                        (req, index) => (
+                                          <li
+                                            key={index}
+                                            className="text-gray-300 flex items-start"
+                                          >
+                                            <span className="text-blue-400 mr-2 mt-1">
+                                              •
+                                            </span>
+                                            <span>{req}</span>
+                                          </li>
+                                        )
+                                      )}
+                                    </ul>
+                                  </div>
+                                </div>
+                              )}
+                          </div>
+                        )}
+                    </>
+                  ) : (
+                    // Error State (when modal is shown but no app data and not loading)
+                    <div className="text-center py-12">
+                      <p className="text-red-400 mb-4">
+                        Failed to load app details
+                      </p>
+                      <button
+                        onClick={closeModal}
+                        className="text-gray-400 hover:text-white transition-colors duration-200"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
