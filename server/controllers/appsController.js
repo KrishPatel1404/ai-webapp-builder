@@ -10,7 +10,29 @@ const openai = new OpenAI({
 
 // System prompt for app generation
 const SYSTEM_PROMPT = `
-EMPTY
+Template:
+const { AppBar, Toolbar, Typography, Tabs, Tab, Box, Container } = MaterialUI; 
+const { useState } = React;
+
+function DemoApp() {
+    const [value, setValue] = useState(0);
+    // Add as many as needed
+
+    const handleChange = (event, newValue) => {
+        setValue(newValue);
+        // Add as many as needed
+    };
+
+    return (
+    <>
+        // Code goes here
+    </>
+    );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<DemoApp />);
+
 `;
 
 // @desc    Generate app from requirements
@@ -55,23 +77,23 @@ const generateApp = async (req, res) => {
 
         // Prepare the prompt for OpenAI
         const generationPrompt = `
-Generate a complete web application based on these requirements:
+Based on this and this requirement list:
 
-App Name: ${requirement.extractedRequirements.appName || requirement.title}
-Original Prompt: ${requirement.prompt}
-
-Structured Requirements:
 ${JSON.stringify(requirement.extractedRequirements, null, 2)}
 
-Technical Requirements: ${requirement.extractedRequirements.technicalRequirements?.join(', ') || 'Modern web stack'}
+Using simple code and checking it over. Use MaterialUI components to make a mock web-app from the template given. And ensure more than basic functionality. Do your best to include advanced lists, checkboxes, saving data and anything advanced where possible. Think about what features would be requirements even if not directly in the requirements list.
 
-Generate a complete, production-ready application that implements all the specified features and requirements.
-`;
+ENSURE TO ALWAYS STICK TO MATERIAL UI AND THE TEMPLATE GIVEN`;
 
         try {
-            // Call OpenAI API using gpt-5-nano with flex tier
+            // Log the prompt being sent to OpenAI (for debugging)
+            if (process.env.NODE_ENV !== 'production') {
+                console.log('Sending generation prompt to OpenAI:\n', generationPrompt);
+            }
+
+            // Call OpenAI API using gpt-5
             const completion = await openai.responses.create({
-                model: "gpt-5-nano",
+                model: "gpt-5",
                 reasoning: { effort: "medium" },
                 input: [
                     { role: "system", content: SYSTEM_PROMPT },
@@ -97,10 +119,10 @@ Generate a complete, production-ready application that implements all the specif
                 throw new Error('Empty response from AI service');
             }
 
-            // Parse the JSON response
+            // Parse the Text (Javascript) response
             let generatedCode;
             try {
-                generatedCode = JSON.parse(response);
+                generatedCode = { code: response };
             } catch (parseError) {
                 console.error('Failed to parse OpenAI response:', parseError);
                 console.error('Raw AI response that failed to parse:', JSON.stringify(response));
@@ -116,7 +138,7 @@ Generate a complete, production-ready application that implements all the specif
             app.metadata = {
                 processingTime,
                 tokensUsed: completion.usage?.total_tokens || 0,
-                apiVersion: 'gpt-5-nano',
+                apiVersion: 'gpt-5',
                 generationPrompt
             };
 
