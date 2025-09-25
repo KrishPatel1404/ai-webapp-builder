@@ -27,6 +27,7 @@ function Requirements() {
   const [showModal, setShowModal] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [editForm, setEditForm] = useState({
     appName: "",
     prompt: "",
@@ -150,7 +151,6 @@ function Requirements() {
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
       month: "short",
       day: "numeric",
       hour: "2-digit",
@@ -181,6 +181,9 @@ function Requirements() {
     setShowModal(false);
     setSelectedRequirement(null);
     setIsEditing(false);
+    // Don't reset isGenerating here since generation continues in background
+    setError(""); // Clear any error messages
+    setSuccessMessage(""); // Clear any success messages
   };
 
   const validateForm = () => {
@@ -306,11 +309,67 @@ function Requirements() {
     }));
   };
 
-  const handleGenerate = () => {
-    console.log(
-      "Requirements data:",
-      selectedRequirement.extractedRequirements
-    );
+  const handleGenerate = async () => {
+    if (!selectedRequirement) {
+      setError("No requirement selected");
+      return;
+    }
+
+    try {
+      setIsGenerating(true);
+      setError("");
+      setSuccessMessage("");
+
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/apps/generate`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            requirementId: selectedRequirement._id,
+          }),
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setSuccessMessage(
+          `App "${data.app.name}" generated successfully! Redirecting to Applications...`
+        );
+
+        // Update the requirement in the local state to reflect completion
+        setRequirements((prevRequirements) =>
+          prevRequirements.map((req) =>
+            req._id === selectedRequirement._id
+              ? { ...req, status: "completed" }
+              : req
+          )
+        );
+
+        // Update selected requirement if modal is still open
+        setSelectedRequirement((prev) =>
+          prev ? { ...prev, status: "completed" } : prev
+        );
+
+        // Navigate to applications page after a brief delay
+        setTimeout(() => {
+          closeModal();
+          navigate("/apps");
+        }, 1500);
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || "Failed to generate app");
+      }
+    } catch (error) {
+      console.error("Error generating app:", error);
+      setError("Failed to generate app. Please try again.");
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   if (loading || loadingRequirements) {
@@ -657,13 +716,30 @@ function Requirements() {
                         <>
                           <button
                             onClick={handleGenerate}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+                            disabled={isGenerating}
+                            className={`px-4 py-2 rounded-lg transition-colors duration-200 flex items-center space-x-2 ${
+                              isGenerating
+                                ? "bg-gray-600 cursor-not-allowed"
+                                : "bg-blue-600 hover:bg-blue-700"
+                            } text-white`}
                           >
-                            Generate
+                            {isGenerating ? (
+                              <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                <span>Generating...</span>
+                              </>
+                            ) : (
+                              <span>Generate</span>
+                            )}
                           </button>
                           <button
                             onClick={() => setIsEditing(true)}
-                            className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+                            disabled={isGenerating}
+                            className={`px-4 py-2 rounded-lg transition-colors duration-200 ${
+                              isGenerating
+                                ? "bg-gray-500 cursor-not-allowed"
+                                : "bg-gray-600 hover:bg-gray-700"
+                            } text-white`}
                           >
                             Edit
                           </button>
@@ -693,12 +769,38 @@ function Requirements() {
                   {/* Success and Error Messages */}
                   {successMessage && (
                     <div className="mb-4 bg-green-900/50 border border-green-500 text-green-200 px-4 py-3 rounded-lg">
-                      {successMessage}
+                      <p>{successMessage}</p>
+                      {successMessage.includes("generated successfully") && (
+                        <button
+                          onClick={() => {
+                            closeModal();
+                            navigate("/apps");
+                          }}
+                          className="mt-2 bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm transition-colors duration-200"
+                        >
+                          View in Applications
+                        </button>
+                      )}
                     </div>
                   )}
                   {error && (
                     <div className="mb-4 bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded-lg">
                       {error}
+                    </div>
+                  )}
+                  {/* Generation Progress Hint */}
+                  {isGenerating && (
+                    <div className="mb-4 bg-blue-900/50 border border-blue-500 text-blue-200 px-4 py-3 rounded-lg flex items-center space-x-3">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-300"></div>
+                      <div>
+                        <p className="font-semibold">
+                          Generating your application...
+                        </p>
+                        <p className="text-sm text-blue-300">
+                          This may take a few minutes. You can safely close this
+                          modal and check the Applications page later.
+                        </p>
+                      </div>
                     </div>
                   )}
 

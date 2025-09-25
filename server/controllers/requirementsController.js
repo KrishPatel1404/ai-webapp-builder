@@ -44,6 +44,7 @@ Rules:
 // @access  Private (requires authentication)
 const extractRequirements = async (req, res) => {
     const startTime = Date.now();
+    let requirement = null;
 
     try {
         const { text } = req.body;
@@ -63,118 +64,158 @@ const extractRequirements = async (req, res) => {
             });
         }
 
-        // Call OpenAI API using gpt-5-nano with flex tier
-        // Flex tier provides cost optimization with potential variable latency
-        const completion = await openai.responses.create({
-            model: "gpt-5-nano",
-            reasoning: { effort: "low" },
-            input: [
-                { role: "system", content: SYSTEM_PROMPT },
-                { role: "user", content: text }
-            ]
+        // Create initial database entry with 'processing' status
+        requirement = await Requirement.create({
+            prompt: text.trim(),
+            title: `Processing - ${new Date().toLocaleDateString()}`,
+            extractedRequirements: {},
+            user: req.user._id,
+            status: 'processing',
+            metadata: {
+                processingTime: 0,
+                tokensUsed: 0,
+                apiVersion: 'gpt-5-mini'
+            }
         });
 
-        // Check if the response is valid
-        if (!completion || !completion.output_text || !completion.output) {
-            console.error('Invalid OpenAI response structure:', completion);
-            return res.status(500).json({
-                success: false,
-                message: 'Invalid response from AI service',
-                details: 'The AI service returned an unexpected response format'
-            });
-        }
-
-        const aiResponse = completion.output_text;
-
-        if (process.env.NODE_ENV !== 'production') {
-            console.log('AI Response:\n', aiResponse);
-        }
-
-        // Check if the AI response is empty or null
-        if (!aiResponse || aiResponse.trim() === '') {
-            console.error('Empty AI response received');
-            return res.status(500).json({
-                success: false,
-                message: 'Empty response from AI service',
-                details: 'The AI service returned an empty response'
-            });
-        }
-
-        // Parse the AI response
-        let extractedRequirements;
         try {
-            extractedRequirements = JSON.parse(aiResponse);
-        } catch (parseError) {
-            console.error('Failed to parse AI response:', parseError);
-            console.error('Raw AI response that failed to parse:', JSON.stringify(aiResponse));
-            return res.status(500).json({
-                success: false,
-                message: 'Failed to parse requirements from AI response',
-                details: 'The AI response was not in valid JSON format',
-                rawResponse: process.env.NODE_ENV === 'development' ? aiResponse : undefined
+            // Call OpenAI API using gpt-5-mini
+            const completion = await openai.responses.create({
+                model: "gpt-5-mini",
+                reasoning: { effort: "low" },
+                input: [
+                    { role: "system", content: SYSTEM_PROMPT },
+                    { role: "user", content: text }
+                ]
             });
-        }
 
-        // Generate a title if not provided
-        const title = extractedRequirements.appName ||
-            `Requirements - ${new Date().toLocaleDateString()}`;
+            // Check if the response is valid
+            if (!completion || !completion.output_text || !completion.output) {
+                console.error('Invalid OpenAI response structure:', completion);
+                throw new Error('Invalid response from AI service');
+            }
 
-        // Calculate processing time
-        const processingTime = Date.now() - startTime;
+            const aiResponse = completion.output_text;
 
-        // Save to database
-        const requirement = await Requirement.create({
-            prompt: text.trim(),
-            title: title,
-            extractedRequirements: extractedRequirements,
-            user: req.user._id,
-            status: 'draft',
-            metadata: {
+            if (process.env.NODE_ENV !== 'production') {
+                console.log('AI Response:\n', aiResponse);
+            }
+
+            // Check if the AI response is empty or null
+            if (!aiResponse || aiResponse.trim() === '') {
+                console.error('Empty AI response received');
+                throw new Error('Empty response from AI service');
+            }
+
+            // Parse the AI response
+            let extractedRequirements;
+            try {
+                extractedRequirements = JSON.parse(aiResponse);
+            } catch (parseError) {
+                console.error('Failed to parse AI response:', parseError);
+                console.error('Raw AI response that failed to parse:', JSON.stringify(aiResponse));
+                throw new Error('Failed to parse requirements from AI response');
+            }
+
+            // Generate a title if not provided
+            const title = extractedRequirements.appName ||
+                `Requirements - ${new Date().toLocaleDateString()}`;
+
+            // Calculate processing time
+            const processingTime = Date.now() - startTime;
+
+            // Update the requirement with the extracted data and set status to 'draft'
+            requirement.title = title;
+            requirement.extractedRequirements = extractedRequirements;
+            requirement.status = 'draft';
+            requirement.metadata = {
                 processingTime: processingTime,
                 tokensUsed: completion.usage?.total_tokens || 0,
-                apiVersion: 'gpt-5-nano'
-            }
-        });
+                apiVersion: 'gpt-5-mini'
+            };
 
-        // Populate user data for response
-        await requirement.populate('user', 'name email');
+            await requirement.save();
 
-        res.status(201).json({
-            success: true,
-            message: 'Requirements extracted successfully',
-            data: {
-                id: requirement._id,
-                title: requirement.title,
-                prompt: requirement.prompt,
-                extractedRequirements: requirement.extractedRequirements,
-                user: requirement.user,
-                createdAt: requirement.createdAt,
-                metadata: requirement.metadata
+            // Populate user data for response
+            await requirement.populate('user', 'name email');
+
+            res.status(201).json({
+                success: true,
+                message: 'Requirements extracted successfully',
+                data: {
+                    id: requirement._id,
+                    title: requirement.title,
+                    prompt: requirement.prompt,
+                    extractedRequirements: requirement.extractedRequirements,
+                    user: requirement.user,
+                    status: requirement.status,
+                    createdAt: requirement.createdAt,
+                    metadata: requirement.metadata
+                }
+            });
+
+        } catch (aiError) {
+            // Update requirement status to 'failed' if AI processing fails
+            if (requirement) {
+                requirement.status = 'failed';
+                requirement.metadata = {
+                    ...requirement.metadata,
+                    processingTime: Date.now() - startTime,
+                    errorMessage: aiError.message
+                };
+                await requirement.save();
             }
-        });
+
+            console.error('AI processing error:', aiError);
+
+            // Handle specific OpenAI errors
+            if (aiError.code === 'insufficient_quota') {
+                return res.status(402).json({
+                    success: false,
+                    message: 'OpenAI API quota exceeded. Please try again later.',
+                    requirementId: requirement?._id
+                });
+            }
+
+            if (aiError.code === 'invalid_api_key') {
+                return res.status(500).json({
+                    success: false,
+                    message: 'OpenAI API configuration error',
+                    requirementId: requirement?._id
+                });
+            }
+
+            return res.status(500).json({
+                success: false,
+                message: 'Failed to extract requirements',
+                details: aiError.message,
+                requirementId: requirement?._id
+            });
+        }
 
     } catch (error) {
         console.error('Error in extractRequirements:', error);
 
-        // Handle specific OpenAI errors
-        if (error.code === 'insufficient_quota') {
-            return res.status(402).json({
-                success: false,
-                message: 'OpenAI API quota exceeded. Please try again later.'
-            });
-        }
-
-        if (error.code === 'invalid_api_key') {
-            return res.status(500).json({
-                success: false,
-                message: 'OpenAI API configuration error'
-            });
+        // If we have a requirement record, update it to failed status
+        if (requirement) {
+            try {
+                requirement.status = 'failed';
+                requirement.metadata = {
+                    ...requirement.metadata,
+                    processingTime: Date.now() - startTime,
+                    errorMessage: error.message
+                };
+                await requirement.save();
+            } catch (saveError) {
+                console.error('Error updating requirement to failed status:', saveError);
+            }
         }
 
         res.status(500).json({
             success: false,
             message: 'Failed to extract requirements',
-            error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+            error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+            requirementId: requirement?._id
         });
     }
 };
@@ -408,10 +449,27 @@ const updateRequirement = async (req, res) => {
     }
 };
 
+// @desc    Update requirement status (internal use)
+// @access  Internal function for other controllers
+const updateRequirementStatus = async (requirementId, status) => {
+    try {
+        const requirement = await Requirement.findByIdAndUpdate(
+            requirementId,
+            { status: status },
+            { new: true }
+        );
+        return requirement;
+    } catch (error) {
+        console.error('Error updating requirement status:', error);
+        throw error;
+    }
+};
+
 module.exports = {
     extractRequirements,
     getUserRequirements,
     getRequirementById,
     updateRequirement,
-    deleteRequirement
+    deleteRequirement,
+    updateRequirementStatus
 };

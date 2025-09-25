@@ -13,6 +13,7 @@ const PORT = process.env.PORT;
 // Import routes
 const authRoutes = require('./routes/auth');
 const requirementsRoutes = require('./routes/requirements');
+const appsRoutes = require('./routes/apps');
 
 // MongoDB connection
 const connectDB = async () => {
@@ -50,6 +51,7 @@ app.use(express.urlencoded({ extended: true }));
 // Mount routes
 app.use('/api/auth', authRoutes);
 app.use('/api/requirements', requirementsRoutes);
+app.use('/api/apps', appsRoutes);
 
 // Basic Hello World route
 app.get('/', (req, res) => {
