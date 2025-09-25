@@ -2,11 +2,14 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
+import AnimatedBackground from "./components/AnimatedBackground";
+import { useResponsive } from "./hooks/useResponsive";
 
 function Preview() {
   const navigate = useNavigate();
   const { id: appId } = useParams();
   const { isAuthenticated, loading } = useAuth();
+  const { isMobile, isTablet } = useResponsive();
 
   const iframeRef = useRef(null);
   const [generatedCode, setGeneratedCode] = useState("");
@@ -131,14 +134,14 @@ function Preview() {
   if (loading || loadingApp) {
     return (
       <div className="min-h-screen flex flex-col relative overflow-hidden bg-gray-900 text-white">
-        <div className="absolute inset-0 bg-gray-900">
-          <div className="absolute inset-0 bg-[radial-gradient(circle,_rgba(240,240,240,0.05)_1.5px,_transparent_1px)] [background-size:30px_30px]"></div>
-        </div>
+        {/* Animated Background */}
+        <AnimatedBackground animate={false} />
+
         <div className="relative z-10">
           <Navbar />
         </div>
         <div className="flex-grow flex items-center justify-center">
-          <div className="text-xl text-gray-300">
+          <div className={`${isMobile ? "text-lg" : "text-xl"} text-gray-300`}>
             {loading ? "Loading..." : "Loading app..."}
           </div>
         </div>
@@ -150,10 +153,8 @@ function Preview() {
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden bg-gray-900 text-white">
-      {/* Pattern overlay */}
-      <div className="absolute inset-0 bg-gray-900">
-        <div className="absolute inset-0 bg-[radial-gradient(circle,_rgba(240,240,240,0.05)_1.5px,_transparent_1px)] [background-size:30px_30px]"></div>
-      </div>
+      {/* Animated Background */}
+      <AnimatedBackground animate={false} />
 
       {/* Navbar */}
       <div className="relative z-10">
@@ -161,12 +162,22 @@ function Preview() {
       </div>
 
       {/* Main Section */}
-      <div className="flex-1 flex flex-col pt-4 relative z-10 px-4">
+      <div
+        className={`flex-1 flex flex-col ${
+          isMobile ? "pt-4 px-4" : "pt-6 px-6"
+        } relative z-10`}
+      >
         {/* App Info */}
         {appData && (
           <div className="flex justify-center mb-4">
-            <div className="p-3 bg-gray-800/50 border border-gray-700 rounded-lg shadow-lg max-w-md">
-              <p className="text-sm text-gray-400">
+            <div
+              className={`${
+                isMobile ? "p-3 max-w-sm" : "p-3 max-w-md"
+              } bg-gray-800/50 border border-gray-700 rounded-lg shadow-lg`}
+            >
+              <p
+                className={`${isMobile ? "text-xs" : "text-sm"} text-gray-400`}
+              >
                 <span className="text-blue-400 font-semibold">Status:</span>{" "}
                 <span
                   className={`capitalize ${
@@ -181,7 +192,11 @@ function Preview() {
                 </span>
               </p>
               {appData.errorMessage && (
-                <p className="text-sm text-red-400 mt-2">
+                <p
+                  className={`${
+                    isMobile ? "text-xs" : "text-sm"
+                  } text-red-400 mt-2`}
+                >
                   Error: {appData.errorMessage}
                 </p>
               )}
@@ -192,8 +207,16 @@ function Preview() {
         {/* Error Message */}
         {error && (
           <div className="flex justify-center mb-4">
-            <div className="p-4 bg-red-900/50 border border-red-700 rounded-lg max-w-2xl">
-              <p className="text-lg text-red-300">Error: {error}</p>
+            <div
+              className={`${
+                isMobile ? "p-3 max-w-sm" : "p-4 max-w-2xl"
+              } bg-red-900/50 border border-red-700 rounded-lg`}
+            >
+              <p
+                className={`${isMobile ? "text-base" : "text-lg"} text-red-300`}
+              >
+                Error: {error}
+              </p>
             </div>
           </div>
         )}
@@ -203,13 +226,25 @@ function Preview() {
           !error &&
           !loadingApp && (
             <div className="flex justify-center items-center flex-1">
-              <div className="p-6 bg-yellow-900/50 border border-yellow-700 rounded-lg max-w-2xl text-center">
-                <p className="text-lg text-yellow-300 mb-2">
+              <div
+                className={`${
+                  isMobile ? "p-4 max-w-sm" : "p-6 max-w-2xl"
+                } bg-yellow-900/50 border border-yellow-700 rounded-lg text-center`}
+              >
+                <p
+                  className={`${
+                    isMobile ? "text-base" : "text-lg"
+                  } text-yellow-300 mb-2`}
+                >
                   {appData && appData.status !== "completed"
                     ? `App is ${appData.status}. Preview not available yet.`
                     : "No generated code available for this app."}
                 </p>
-                <p className="text-sm text-gray-400">
+                <p
+                  className={`${
+                    isMobile ? "text-xs" : "text-sm"
+                  } text-gray-400`}
+                >
                   {appData && appData.status !== "completed"
                     ? "Please wait for the app generation to complete."
                     : "Please check if the app has been generated successfully."}
@@ -223,15 +258,29 @@ function Preview() {
           !error &&
           appData &&
           appData.status === "completed" && (
-            <div className="flex-1 flex flex-col pb-4">
+            <div
+              className={`flex-1 flex flex-col ${isMobile ? "pb-4" : "pb-6"}`}
+            >
               {!previewLoaded && (
-                <div className="flex-1 max-w-5xl h-96 mx-auto w-full relative bg-blue-900/50 border border-blue-700 rounded-lg flex items-center justify-center">
-                  <p className="text-blue-300 animate-pulse">
+                <div
+                  className={`flex-1 ${
+                    isMobile ? "max-w-sm h-64" : "max-w-5xl h-96"
+                  } mx-auto w-full relative bg-blue-900/50 border border-blue-700 rounded-lg flex items-center justify-center`}
+                >
+                  <p
+                    className={`text-blue-300 animate-pulse ${
+                      isMobile ? "text-sm" : "text-base"
+                    }`}
+                  >
                     Loading preview...
                   </p>
                 </div>
               )}
-              <div className="flex-1 max-w-7xl mx-auto w-full relative">
+              <div
+                className={`flex-1 ${
+                  isMobile ? "max-w-full" : isTablet ? "max-w-5xl" : "max-w-7xl"
+                } mx-auto w-full relative`}
+              >
                 <iframe
                   ref={iframeRef}
                   title="App Preview"

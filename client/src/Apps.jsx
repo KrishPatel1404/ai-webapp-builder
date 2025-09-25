@@ -15,12 +15,15 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
+import AnimatedBackground from "./components/AnimatedBackground";
+import { useResponsive } from "./hooks/useResponsive";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 function Apps() {
   const navigate = useNavigate();
   const { isAuthenticated, loading } = useAuth();
+  const { isMobile, isTablet } = useResponsive();
   const [apps, setApps] = useState([]);
   const [loadingApps, setLoadingApps] = useState(true);
   const [error, setError] = useState("");
@@ -190,7 +193,6 @@ function Apps() {
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
       month: "short",
       day: "numeric",
       hour: "2-digit",
@@ -336,11 +338,20 @@ function Apps() {
 
   if (loading || loadingApps) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white">
-        <Navbar />
-        <div className="container mx-auto px-6 py-8">
+      <div className="min-h-screen flex flex-col relative overflow-hidden bg-gray-900 text-white">
+        <div className="absolute inset-0 bg-gray-900">
+          <div className="absolute inset-0 bg-[radial-gradient(circle,_rgba(240,240,240,0.05)_1.5px,_transparent_1px)] [background-size:30px_30px]"></div>
+        </div>
+        <div className="relative z-10">
+          <Navbar />
+        </div>
+        <div className="flex-grow flex items-center justify-center">
           <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500"></div>
+            <div
+              className={`animate-spin rounded-full ${
+                isMobile ? "h-12 w-12" : "h-16 w-16"
+              } border-b-2 border-blue-500`}
+            ></div>
           </div>
         </div>
       </div>
@@ -348,19 +359,43 @@ function Apps() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      <Navbar />
-      <div className="container mx-auto px-6 py-8">
-        <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen flex flex-col relative overflow-hidden bg-gray-900 text-white">
+      {/* Animated Background */}
+      <AnimatedBackground animate={false} />
+
+      {/* Navbar */}
+      <div className="relative z-10">
+        <Navbar />
+      </div>
+
+      {/* Main Content */}
+      <div
+        className={`container mx-auto ${
+          isMobile ? "px-4 py-6" : "px-6 py-8"
+        } relative z-10`}
+      >
+        <div
+          className={`${
+            isMobile ? "max-w-full" : isTablet ? "max-w-5xl" : "max-w-6xl"
+          } mx-auto`}
+        >
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-4xl font-bold text-white mb-2">
+              <h1
+                className={`font-bold text-white ${
+                  isMobile ? "mb-2 text-3xl" : "mb-2 text-4xl"
+                }`}
+              >
                 Applications
               </h1>
-              <p className="text-gray-400">
+              <p
+                className={`text-gray-400 ${
+                  isMobile ? "text-sm" : "text-base"
+                }`}
+              >
                 View generated application previews
               </p>
-            </div>{" "}
+            </div>
           </div>
 
           <hr className="border-gray-600 my-4" />
@@ -531,11 +566,11 @@ function Apps() {
                           </h2>
                           <div className="flex items-center space-x-2 mt-2">
                             {getStatusIcon(selectedApp.status)}
-                            <span className="text-gray-400">
+                            <span className="text-gray-400 text-xs">
                               {getStatusText(selectedApp.status)}
                             </span>
-                            <span className="text-gray-500">•</span>
-                            <span className="text-gray-400">
+                            <span className="text-gray-500 text-xs">•</span>
+                            <span className="text-gray-400 text-xs">
                               {formatDate(selectedApp.createdAt)}
                             </span>
                           </div>
@@ -546,7 +581,7 @@ function Apps() {
                               onClick={() => viewApp(selectedApp._id)}
                               className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center"
                             >
-                              <FiExternalLink className="mr-2" /> View Preview
+                              <FiExternalLink className="mr-2" /> View
                             </button>
                           )}
                           <button

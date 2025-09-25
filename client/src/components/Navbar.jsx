@@ -7,6 +7,7 @@ import {
   FiLogOut,
   FiLogIn,
   FiLayers,
+  FiGrid,
   FiMenu,
   FiX,
 } from "react-icons/fi";
@@ -108,6 +109,9 @@ function Navbar() {
                 <NavLink to="/requirements" icon={FiLayers}>
                   Requirements
                 </NavLink>
+                <NavLink to="/apps" icon={FiGrid}>
+                  Applications
+                </NavLink>
                 <NavLink to="/profile" icon={FiUser}>
                   Profile
                 </NavLink>
@@ -153,7 +157,7 @@ function Navbar() {
       {isMobile && (
         <div
           className={`transition-all duration-300 ease-in-out overflow-hidden ${
-            isMobileMenuOpen ? "max-h-80 opacity-100 mt-3" : "max-h-0 opacity-0"
+            isMobileMenuOpen ? "max-h-95 opacity-100 mt-2" : "max-h-0 opacity-0"
           }`}
         >
           <div className="bg-gray-700 rounded-lg shadow-lg">
@@ -168,6 +172,9 @@ function Navbar() {
                 <>
                   <NavLink to="/requirements" icon={FiLayers}>
                     Requirements
+                  </NavLink>
+                  <NavLink to="/apps" icon={FiGrid}>
+                    Applications
                   </NavLink>
                   <NavLink to="/profile" icon={FiUser}>
                     Profile
