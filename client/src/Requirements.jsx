@@ -10,12 +10,15 @@ import {
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
+import AnimatedBackground from "./components/AnimatedBackground";
+import { useResponsive } from "./hooks/useResponsive";
 
 function Requirements() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   // const { user, isAuthenticated, loading } = useAuth();
   const { isAuthenticated, loading } = useAuth();
+  const { isMobile, isTablet, touchCapable } = useResponsive();
   const [requirements, setRequirements] = useState([]);
   const [loadingRequirements, setLoadingRequirements] = useState(true);
   const [error, setError] = useState("");
@@ -312,11 +315,21 @@ function Requirements() {
 
   if (loading || loadingRequirements) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white">
-        <Navbar />
-        <div className="container mx-auto px-6 py-8">
+      <div className="min-h-screen flex flex-col relative overflow-hidden bg-gray-900 text-white">
+        <div className="relative z-10">
+          <Navbar />
+        </div>
+        <div
+          className={`container mx-auto ${
+            isMobile ? "px-4 py-6" : "px-6 py-8"
+          } relative z-10`}
+        >
           <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500"></div>
+            <div
+              className={`animate-spin rounded-full ${
+                isMobile ? "h-12 w-12" : "h-16 w-16"
+              } border-b-2 border-blue-500`}
+            ></div>
           </div>
         </div>
       </div>
@@ -324,16 +337,41 @@ function Requirements() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      <Navbar />
-      <div className="container mx-auto px-6 py-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between mb-4">
+    <div className="min-h-screen flex flex-col relative overflow-hidden bg-gray-900 text-white">
+      <AnimatedBackground animate={false} />
+      <div className="relative z-10">
+        <Navbar />
+      </div>
+      <div
+        className={`container mx-auto ${
+          isMobile ? "px-4 py-6" : "px-6 py-8"
+        } relative z-10`}
+      >
+        <div
+          className={`${
+            isMobile ? "max-w-full" : isTablet ? "max-w-5xl" : "max-w-6xl"
+          } mx-auto`}
+        >
+          <div
+            className={`${
+              isMobile
+                ? "flex-col space-y-3"
+                : "flex items-center justify-between"
+            } mb-4`}
+          >
             <div>
-              <h1 className="text-4xl font-bold text-white mb-2">
+              <h1
+                className={`font-bold text-white ${
+                  isMobile ? "text-2xl" : isTablet ? "text-3xl" : "text-4xl"
+                } mb-2`}
+              >
                 Requirements Generated
               </h1>
-              <p className="text-gray-400">
+              <p
+                className={`text-gray-400 ${
+                  isMobile ? "text-sm" : "text-base"
+                }`}
+              >
                 View and manage your extracted requirements
               </p>
             </div>
@@ -342,20 +380,38 @@ function Requirements() {
           <hr className="border-gray-600 my-4" />
 
           {error && (
-            <div className="mb-6 bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded-lg">
+            <div
+              className={`${
+                isMobile ? "mb-4 px-3 py-2 text-sm" : "mb-6 px-4 py-3 text-base"
+              } bg-red-900/50 border border-red-500 text-red-200 rounded-lg`}
+            >
               {error}
             </div>
           )}
 
           {requirements.length === 0 ? (
-            <div className="text-center py-12">
-              <FiLayers className="mx-auto h-16 w-16 text-gray-600 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-400 mb-2">
+            <div className={`text-center ${isMobile ? "py-8" : "py-12"}`}>
+              <FiLayers
+                className={`mx-auto ${
+                  isMobile ? "h-12 w-12" : "h-16 w-16"
+                } text-gray-600 mb-4`}
+              />
+              <h3
+                className={`${
+                  isMobile ? "text-lg" : "text-xl"
+                } font-semibold text-gray-400 mb-2`}
+              >
                 {requirements.length === 0
                   ? "No requirements found"
                   : "No matching requirements"}
               </h3>
-              <p className="text-gray-500 mb-6">
+              <p
+                className={`text-gray-500 mb-6 ${
+                  isMobile
+                    ? "text-sm max-w-xs mx-auto"
+                    : "text-base max-w-md mx-auto"
+                }`}
+              >
                 {requirements.length === 0
                   ? "You haven't extracted any requirements yet. Start by creating your first requirement extraction."
                   : "Try adjusting your search or filter criteria."}
@@ -363,23 +419,47 @@ function Requirements() {
               {requirements.length === 0 && (
                 <button
                   onClick={() => navigate("/")}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200"
+                  className={`bg-blue-600 ${
+                    touchCapable ? "active:bg-blue-700" : "hover:bg-blue-700"
+                  } text-white font-semibold ${
+                    isMobile ? "py-2 px-4 text-sm" : "py-2 px-6 text-base"
+                  } rounded-lg transition-colors duration-200 ${
+                    touchCapable ? "touch-target" : ""
+                  }`}
                 >
                   Create Requirements
                 </button>
               )}
             </div>
           ) : (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div
+              className={`grid ${
+                isMobile
+                  ? "grid-cols-1 gap-4"
+                  : isTablet
+                  ? "grid-cols-2 gap-5"
+                  : "gap-6 md:grid-cols-2 lg:grid-cols-3"
+              }`}
+            >
               {requirements.map((requirement) => (
                 <div
                   key={requirement._id}
                   onClick={() => openModal(requirement)}
-                  className="bg-gray-800 border border-gray-700 rounded-lg p-6 hover:border-gray-600 transition-colors duration-200 cursor-pointer"
+                  className={`bg-gray-800 border border-gray-700 rounded-lg ${
+                    isMobile ? "p-4" : "p-6"
+                  } ${
+                    touchCapable
+                      ? "active:border-gray-600"
+                      : "hover:border-gray-600"
+                  } transition-colors duration-200 cursor-pointer`}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-white mb-1">
+                      <h3
+                        className={`${
+                          isMobile ? "text-base" : "text-lg"
+                        } font-semibold text-white mb-1`}
+                      >
                         {requirement.extractedRequirements?.appName ||
                           requirement.title ||
                           "Untitled"}
@@ -391,10 +471,18 @@ function Requirements() {
                           e.stopPropagation();
                           setDeleteConfirm(requirement._id);
                         }}
-                        className="text-red-400 hover:text-red-300 transition-colors duration-200"
+                        className={`text-red-400 ${
+                          touchCapable
+                            ? "active:text-red-300"
+                            : "hover:text-red-300"
+                        } transition-colors duration-200 ${
+                          touchCapable ? "p-2" : "p-1"
+                        }`}
                         title="Delete Requirement"
                       >
-                        <FiTrash2 className="h-5 w-5" />
+                        <FiTrash2
+                          className={`${isMobile ? "h-4 w-4" : "h-5 w-5"}`}
+                        />
                       </button>
                     </div>
                   </div>
@@ -488,13 +576,31 @@ function Requirements() {
 
           {/* Details Modal */}
           {showModal && selectedRequirement && (
-            <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 p-4">
-              <div className="bg-gray-800 border border-gray-700 rounded-lg max-w-5xl w-full max-h-[90vh] overflow-y-auto">
-                <div className="p-6">
-                  <div className="flex items-start justify-between mb-6">
+            <div
+              className={`fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 ${
+                isMobile ? "p-2" : "p-4"
+              }`}
+            >
+              <div
+                className={`bg-gray-800 border border-gray-700 rounded-lg ${
+                  isMobile
+                    ? "max-w-full w-full"
+                    : isTablet
+                    ? "max-w-4xl w-full"
+                    : "max-w-5xl w-full"
+                } max-h-[90vh] overflow-y-auto`}
+              >
+                <div className={isMobile ? "p-4" : "p-6"}>
+                  <div
+                    className={`${
+                      isMobile
+                        ? "flex-col space-y-3"
+                        : "flex items-start justify-between"
+                    } ${isMobile ? "mb-4" : "mb-6"}`}
+                  >
                     <div className="flex-1">
                       {isEditing ? (
-                        <div className="mr-4">
+                        <div className={isMobile ? "" : "mr-4"}>
                           <input
                             type="text"
                             value={editForm.appName}
@@ -504,11 +610,17 @@ function Requirements() {
                                 appName: e.target.value,
                               }))
                             }
-                            className="w-full px-3 py-1 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xl font-bold"
+                            className={`w-full px-3 py-1 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                              isMobile ? "text-lg" : "text-xl"
+                            } font-bold ${touchCapable ? "touch-target" : ""}`}
                           />
                         </div>
                       ) : (
-                        <h2 className="text-2xl font-bold text-white mb-2">
+                        <h2
+                          className={`${
+                            isMobile ? "text-xl" : "text-2xl"
+                          } font-bold text-white mb-2`}
+                        >
                           {selectedRequirement.extractedRequirements?.appName ||
                             selectedRequirement.title ||
                             "Untitled"}
