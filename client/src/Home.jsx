@@ -85,7 +85,7 @@ function Home() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { isAuthenticated } = useAuth();
-  const { isMobile, isTablet, isHighDPI, isRetina, touchCapable } =
+  const { isMobile, isTablet, isDesktop, isHighDPI, isRetina, touchCapable } =
     useResponsive();
   const navigate = useNavigate();
 
@@ -175,7 +175,7 @@ function Home() {
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden bg-gray-900 text-white">
       {/* Animated Background */}
-      <AnimatedBackground />
+      <AnimatedBackground animate={isDesktop} />
 
       {/* Device Info (dev only) */}
       <DeviceInfo />
