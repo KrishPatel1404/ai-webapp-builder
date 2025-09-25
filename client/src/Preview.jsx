@@ -161,12 +161,12 @@ function Preview() {
       </div>
 
       {/* Main Section */}
-      <div className="flex-1 flex flex-col pt-4 relative z-10">
+      <div className="flex-1 flex flex-col pt-4 relative z-10 px-4">
         {/* App Info */}
         {appData && (
           <div className="flex justify-center mb-4">
-            <div className="p-2 bg-gray-800/50 border border-gray-700 rounded-lg">
-              <p className="text-xs text-gray-400">
+            <div className="p-3 bg-gray-800/50 border border-gray-700 rounded-lg shadow-lg max-w-md">
+              <p className="text-sm text-gray-400">
                 <span className="text-blue-400 font-semibold">Status:</span>{" "}
                 <span
                   className={`capitalize ${
@@ -181,42 +181,66 @@ function Preview() {
                 </span>
               </p>
               {appData.errorMessage && (
-                <p className="text-sm text-red-400 mt-1">
-                  {appData.errorMessage}
+                <p className="text-sm text-red-400 mt-2">
+                  Error: {appData.errorMessage}
                 </p>
               )}
             </div>
           </div>
         )}
 
-        {/* No Code Message */}
-        {!generatedCode && !error && !loadingApp && (
-          <div className="flex justify-center items-center flex-1">
-            <div className="p-4 bg-yellow-900/50 border border-yellow-700 rounded-lg max-w-2xl">
-              <p className="text-lg text-yellow-300">
-                No generated code available for this app.
-              </p>
+        {/* Error Message */}
+        {error && (
+          <div className="flex justify-center mb-4">
+            <div className="p-4 bg-red-900/50 border border-red-700 rounded-lg max-w-2xl">
+              <p className="text-lg text-red-300">Error: {error}</p>
             </div>
           </div>
         )}
 
-        {/* Preview iframe */}
-        {generatedCode && !error && (
-          <div className="flex-1 flex flex-col px-4 pb-4">
-            {!previewLoaded && (
-              <div className="mb-4 p-4 bg-blue-900/50 border border-blue-700 rounded-lg text-center">
-                <p className="text-blue-300">Loading preview...</p>
+        {/* No Code Message */}
+        {(!generatedCode || !appData || appData.status !== "completed") &&
+          !error &&
+          !loadingApp && (
+            <div className="flex justify-center items-center flex-1">
+              <div className="p-6 bg-yellow-900/50 border border-yellow-700 rounded-lg max-w-2xl text-center">
+                <p className="text-lg text-yellow-300 mb-2">
+                  {appData && appData.status !== "completed"
+                    ? `App is ${appData.status}. Preview not available yet.`
+                    : "No generated code available for this app."}
+                </p>
+                <p className="text-sm text-gray-400">
+                  {appData && appData.status !== "completed"
+                    ? "Please wait for the app generation to complete."
+                    : "Please check if the app has been generated successfully."}
+                </p>
               </div>
-            )}
-            <div className="flex-1 max-w-7xl mx-auto w-full relative">
-              <iframe
-                ref={iframeRef}
-                title="App Preview"
-                className="absolute inset-0 w-full h-full border border-gray-700 rounded-lg bg-white"
-              />
             </div>
-          </div>
-        )}
+          )}
+
+        {/* Preview iframe */}
+        {generatedCode &&
+          !error &&
+          appData &&
+          appData.status === "completed" && (
+            <div className="flex-1 flex flex-col pb-4">
+              {!previewLoaded && (
+                <div className="flex-1 max-w-5xl h-96 mx-auto w-full relative bg-blue-900/50 border border-blue-700 rounded-lg flex items-center justify-center">
+                  <p className="text-blue-300 animate-pulse">
+                    Loading preview...
+                  </p>
+                </div>
+              )}
+              <div className="flex-1 max-w-7xl mx-auto w-full relative">
+                <iframe
+                  ref={iframeRef}
+                  title="App Preview"
+                  className="absolute inset-0 w-full h-full border border-gray-700 rounded-lg bg-white"
+                  aria-label="Application preview"
+                />
+              </div>
+            </div>
+          )}
       </div>
     </div>
   );
