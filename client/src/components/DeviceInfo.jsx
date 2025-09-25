@@ -4,11 +4,6 @@ import { useResponsive } from "../hooks/useResponsive";
 const DeviceInfo = () => {
   const screenSize = useResponsive();
 
-  // Only show in development
-  if (import.meta.env.PROD) {
-    return null;
-  }
-
   return (
     <div className="fixed bottom-4 left-4 bg-black/80 text-white text-xs p-3 rounded-lg z-50 font-mono">
       <div className="space-y-1">
