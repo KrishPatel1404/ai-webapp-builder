@@ -74,14 +74,14 @@ const extractRequirements = async (req, res) => {
             metadata: {
                 processingTime: 0,
                 tokensUsed: 0,
-                apiVersion: 'gpt-5-nano'
+                apiVersion: 'gpt-5-mini'
             }
         });
 
         try {
-            // Call OpenAI API using gpt-5-nano with flex tier
+            // Call OpenAI API using gpt-5-mini
             const completion = await openai.responses.create({
-                model: "gpt-5-nano",
+                model: "gpt-5-mini",
                 reasoning: { effort: "low" },
                 input: [
                     { role: "system", content: SYSTEM_PROMPT },
@@ -131,7 +131,7 @@ const extractRequirements = async (req, res) => {
             requirement.metadata = {
                 processingTime: processingTime,
                 tokensUsed: completion.usage?.total_tokens || 0,
-                apiVersion: 'gpt-5-nano'
+                apiVersion: 'gpt-5-mini'
             };
 
             await requirement.save();
