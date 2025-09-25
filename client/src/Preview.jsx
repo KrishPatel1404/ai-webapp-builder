@@ -114,7 +114,7 @@ function Preview() {
                   ${
                     isMobile
                       ? `
-                    transform: scale(0.7);
+                    transform: scale(0.75);
                     transform-origin: top left;
                     width: 133.33%;
                     height: 133.33%;
