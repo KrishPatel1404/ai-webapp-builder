@@ -178,7 +178,7 @@ function Home() {
       <AnimatedBackground animate={isDesktop} showIcons={true} />
 
       {/* Device Info (dev only) */}
-      <DeviceInfo />
+      {/* <DeviceInfo /> */}
 
       {/* Navbar on top */}
       <div className="relative z-10">
