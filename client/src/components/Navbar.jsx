@@ -47,10 +47,10 @@ function Navbar() {
                 <FiLayers className="mr-1" /> Requirements
               </Link>
               <Link
-                to="/previews"
+                to="/apps"
                 className="flex items-center text-xl text-gray-200 hover:text-blue-300 transition-colors duration-200"
               >
-                <FiMonitor className="mr-1" /> Apps
+                <FiMonitor className="mr-1" /> Applications
               </Link>
               <Link
                 to="/profile"

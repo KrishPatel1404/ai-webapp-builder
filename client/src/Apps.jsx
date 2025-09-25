@@ -18,7 +18,7 @@ import Navbar from "./components/Navbar";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 
-function Previews() {
+function Apps() {
   const navigate = useNavigate();
   const { isAuthenticated, loading } = useAuth();
   const [apps, setApps] = useState([]);
@@ -333,7 +333,7 @@ function Previews() {
                 Applications
               </h1>
               <p className="text-gray-400">
-                View generated application previews and demos
+                View generated application previews
               </p>
             </div>{" "}
           </div>
@@ -755,4 +755,4 @@ function Previews() {
   );
 }
 
-export default Previews;
+export default Apps;

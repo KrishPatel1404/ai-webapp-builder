@@ -353,10 +353,10 @@ function Requirements() {
           prev ? { ...prev, status: "completed" } : prev
         );
 
-        // Navigate to previews page after a brief delay
+        // Navigate to applications page after a brief delay
         setTimeout(() => {
           closeModal();
-          navigate("/previews");
+          navigate("/apps");
         }, 1500);
       } else {
         const errorData = await response.json();
@@ -663,11 +663,11 @@ function Requirements() {
                         <button
                           onClick={() => {
                             closeModal();
-                            navigate("/previews");
+                            navigate("/apps");
                           }}
                           className="mt-2 bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm transition-colors duration-200"
                         >
-                          View in Previews
+                          View in Applications
                         </button>
                       )}
                     </div>
@@ -687,7 +687,7 @@ function Requirements() {
                         </p>
                         <p className="text-sm text-blue-300">
                           This may take a few minutes. You can safely close this
-                          modal and check the Previews page later.
+                          modal and check the Applications page later.
                         </p>
                       </div>
                     </div>
