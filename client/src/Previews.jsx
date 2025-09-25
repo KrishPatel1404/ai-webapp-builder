@@ -7,10 +7,16 @@ import {
   FiCalendar,
   FiMonitor,
   FiExternalLink,
+  FiCopy,
+  FiChevronDown,
+  FiChevronUp,
+  FiCheck,
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 function Previews() {
   const navigate = useNavigate();
@@ -23,6 +29,8 @@ function Previews() {
   const [showModal, setShowModal] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [loadingAppDetails, setLoadingAppDetails] = useState(false);
+  const [isCodeExpanded, setIsCodeExpanded] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -270,6 +278,31 @@ function Previews() {
   const closeModal = () => {
     setShowModal(false);
     setSelectedApp(null);
+    setIsCodeExpanded(false);
+    setIsCopied(false);
+  };
+
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy text: ", err);
+      // Fallback for older browsers
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    }
+  };
+
+  const toggleCodeExpansion = () => {
+    setIsCodeExpanded(!isCodeExpanded);
   };
 
   const viewApp = (appId) => {
@@ -526,13 +559,97 @@ function Previews() {
 
                       {/* Code */}
                       <div className="mb-6">
-                        <label className="block text-lg font-semibold text-white mb-3">
-                          Code
-                        </label>
-                        <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
-                          <p className="text-gray-300 whitespace-pre-wrap">
-                            {selectedApp.generatedCode || "No code available."}
-                          </p>
+                        <div className="flex items-center justify-between mb-3">
+                          <label className="block text-lg font-semibold text-white">
+                            Generated Code
+                          </label>
+                          <button
+                            onClick={() =>
+                              copyToClipboard(
+                                selectedApp.generatedCode ||
+                                  "No code available."
+                              )
+                            }
+                            className="flex items-center space-x-2 bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded-lg text-sm transition-colors duration-200"
+                            title="Copy code to clipboard"
+                          >
+                            {isCopied ? (
+                              <>
+                                <FiCheck className="w-4 h-4" />
+                                <span>Copied!</span>
+                              </>
+                            ) : (
+                              <>
+                                <FiCopy className="w-4 h-4" />
+                                <span>Copy</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                        <div className="bg-gray-900 border border-gray-700 rounded-lg overflow-hidden">
+                          {selectedApp.generatedCode &&
+                          selectedApp.generatedCode !== "No code available." ? (
+                            <div className="relative">
+                              <SyntaxHighlighter
+                                language="javascript"
+                                style={vscDarkPlus}
+                                customStyle={{
+                                  margin: 0,
+                                  padding: "16px",
+                                  background: "transparent",
+                                  fontSize: "14px",
+                                  maxHeight: isCodeExpanded ? "none" : "200px",
+                                  overflow: isCodeExpanded
+                                    ? "visible"
+                                    : "hidden",
+                                }}
+                                showLineNumbers={true}
+                                wrapLines={true}
+                              >
+                                {selectedApp.generatedCode}
+                              </SyntaxHighlighter>
+                              {!isCodeExpanded &&
+                                selectedApp.generatedCode.split("\n").length >
+                                  8 && (
+                                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-gray-900 to-transparent h-16 pointer-events-none"></div>
+                                )}
+                              {selectedApp.generatedCode.split("\n").length >
+                                8 && (
+                                <div className="border-t border-gray-700 bg-gray-800 px-4 py-2">
+                                  <button
+                                    onClick={toggleCodeExpansion}
+                                    className="flex items-center space-x-2 text-blue-400 hover:text-blue-300 text-sm transition-colors duration-200"
+                                  >
+                                    {isCodeExpanded ? (
+                                      <>
+                                        <FiChevronUp className="w-4 h-4" />
+                                        <span>Show Less</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <FiChevronDown className="w-4 h-4" />
+                                        <span>
+                                          Show More (
+                                          {
+                                            selectedApp.generatedCode.split(
+                                              "\n"
+                                            ).length
+                                          }{" "}
+                                          lines)
+                                        </span>
+                                      </>
+                                    )}
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="p-4">
+                              <p className="text-gray-400 text-center">
+                                No code available.
+                              </p>
+                            </div>
+                          )}
                         </div>
                       </div>
 
