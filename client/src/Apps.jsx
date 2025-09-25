@@ -646,71 +646,83 @@ function Apps() {
                             )}
                           </button>
                         </div>
-                        <div className="bg-gray-900 border border-gray-700 rounded-lg overflow-hidden">
-                          {selectedApp.generatedCode &&
-                          selectedApp.generatedCode !== "No code available." ? (
-                            <div className="relative">
-                              <SyntaxHighlighter
-                                language="javascript"
-                                style={vscDarkPlus}
-                                customStyle={{
-                                  margin: 0,
-                                  padding: "16px",
-                                  background: "transparent",
-                                  fontSize: "14px",
-                                  maxHeight: isCodeExpanded ? "none" : "200px",
-                                  overflow: isCodeExpanded
-                                    ? "visible"
-                                    : "hidden",
-                                }}
-                                showLineNumbers={true}
-                                wrapLines={true}
-                              >
-                                {selectedApp.generatedCode}
-                              </SyntaxHighlighter>
-                              {!isCodeExpanded &&
-                                selectedApp.generatedCode.split("\n").length >
+                        {/* Hide code display on mobile but keep copy functionality */}
+                        {isMobile ? (
+                          <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+                            <p className="text-gray-400 text-center text-sm">
+                              Use the copy button above to access the code.
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="bg-gray-900 border border-gray-700 rounded-lg overflow-hidden">
+                            {selectedApp.generatedCode &&
+                            selectedApp.generatedCode !==
+                              "No code available." ? (
+                              <div className="relative">
+                                <SyntaxHighlighter
+                                  language="javascript"
+                                  style={vscDarkPlus}
+                                  customStyle={{
+                                    margin: 0,
+                                    padding: "16px",
+                                    background: "transparent",
+                                    fontSize: "14px",
+                                    maxHeight: isCodeExpanded
+                                      ? "none"
+                                      : "200px",
+                                    overflow: isCodeExpanded
+                                      ? "visible"
+                                      : "hidden",
+                                  }}
+                                  showLineNumbers={true}
+                                  wrapLines={true}
+                                >
+                                  {selectedApp.generatedCode}
+                                </SyntaxHighlighter>
+                                {!isCodeExpanded &&
+                                  selectedApp.generatedCode.split("\n").length >
+                                    8 && (
+                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-gray-900 to-transparent h-16 pointer-events-none"></div>
+                                  )}
+                                {selectedApp.generatedCode.split("\n").length >
                                   8 && (
-                                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-gray-900 to-transparent h-16 pointer-events-none"></div>
+                                  <div className="border-t border-gray-700 bg-gray-800 px-4 py-2">
+                                    <button
+                                      onClick={toggleCodeExpansion}
+                                      className="flex items-center space-x-2 text-blue-400 hover:text-blue-300 text-sm transition-colors duration-200"
+                                    >
+                                      {isCodeExpanded ? (
+                                        <>
+                                          <FiChevronUp className="w-4 h-4" />
+                                          <span>Show Less</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <FiChevronDown className="w-4 h-4" />
+                                          <span>
+                                            Show More (
+                                            {
+                                              selectedApp.generatedCode.split(
+                                                "\n"
+                                              ).length
+                                            }{" "}
+                                            lines)
+                                          </span>
+                                        </>
+                                      )}
+                                    </button>
+                                  </div>
                                 )}
-                              {selectedApp.generatedCode.split("\n").length >
-                                8 && (
-                                <div className="border-t border-gray-700 bg-gray-800 px-4 py-2">
-                                  <button
-                                    onClick={toggleCodeExpansion}
-                                    className="flex items-center space-x-2 text-blue-400 hover:text-blue-300 text-sm transition-colors duration-200"
-                                  >
-                                    {isCodeExpanded ? (
-                                      <>
-                                        <FiChevronUp className="w-4 h-4" />
-                                        <span>Show Less</span>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <FiChevronDown className="w-4 h-4" />
-                                        <span>
-                                          Show More (
-                                          {
-                                            selectedApp.generatedCode.split(
-                                              "\n"
-                                            ).length
-                                          }{" "}
-                                          lines)
-                                        </span>
-                                      </>
-                                    )}
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <div className="p-4">
-                              <p className="text-gray-400 text-center">
-                                No code available.
-                              </p>
-                            </div>
-                          )}
-                        </div>
+                              </div>
+                            ) : (
+                              <div className="p-4">
+                                <p className="text-gray-400 text-center">
+                                  No code available.
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
 
                       {/* Requirements Details */}
