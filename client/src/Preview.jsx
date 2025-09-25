@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
 import AnimatedBackground from "./components/AnimatedBackground";
@@ -7,7 +7,8 @@ import { useResponsive } from "./hooks/useResponsive";
 
 function Preview() {
   const navigate = useNavigate();
-  const { id: appId } = useParams();
+  const [searchParams] = useSearchParams();
+  const appId = searchParams.get("id");
   const { isAuthenticated, loading } = useAuth();
   const { isMobile, isTablet } = useResponsive();
 

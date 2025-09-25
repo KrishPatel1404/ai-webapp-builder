@@ -23,7 +23,7 @@ createRoot(document.getElementById("root")).render(
           <Route path="/profile" element={<Profile />} />
           <Route path="/requirements" element={<Requirements />} />
           <Route path="/apps" element={<Apps />} />
-          <Route path="/preview/:id" element={<Preview />} />
+          <Route path="/preview" element={<Preview />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
