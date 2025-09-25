@@ -14,6 +14,7 @@ function Preview() {
   const [appData, setAppData] = useState(null);
   const [error, setError] = useState(null);
   const [hasFetched, setHasFetched] = useState(false);
+  const [previewLoaded, setPreviewLoaded] = useState(false);
 
   // Reset states when appId changes
   useEffect(() => {
@@ -21,6 +22,7 @@ function Preview() {
     setGeneratedCode("");
     setError(null);
     setHasFetched(false);
+    setPreviewLoaded(false);
   }, [appId]);
 
   // Redirect to login if not authenticated
@@ -84,39 +86,47 @@ function Preview() {
     }
   }, [appId, isAuthenticated, loading, hasFetched]);
 
-  const loadPreview = () => {
-    if (!iframeRef.current || !generatedCode) return;
+  // Auto-load preview when generatedCode is available
+  useEffect(() => {
+    const loadPreview = () => {
+      if (!iframeRef.current || !generatedCode) return;
 
-    try {
-      const doc = iframeRef.current.contentDocument;
+      try {
+        const doc = iframeRef.current.contentDocument;
 
-      doc.open();
-      doc.write(`
-        <html>
-          <head>
-            <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-            <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-            <script src="https://unpkg.com/@mui/material@5.15.0/umd/material-ui.development.js"></script>
-            <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-            <style>
-              body { margin: 0; padding: 16px; font-family: 'Roboto', sans-serif; }
-              * { box-sizing: border-box; }
-            </style>
-          </head>
-          <body>
-            <div id="root"></div>
-            <script type="text/babel" data-presets="react">
-              ${generatedCode}
-            </script>
-          </body>
-        </html>
-      `);
-      doc.close();
-    } catch (err) {
-      console.error("Error loading preview:", err);
-      setError("Failed to load preview. Please check the generated code.");
+        doc.open();
+        doc.write(`
+          <html>
+            <head>
+              <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+              <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+              <script src="https://unpkg.com/@mui/material@5.15.0/umd/material-ui.development.js"></script>
+              <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+              <style>
+                body { margin: 0; padding: 16px; font-family: 'Roboto', sans-serif; }
+                * { box-sizing: border-box; }
+              </style>
+            </head>
+            <body>
+              <div id="root"></div>
+              <script type="text/babel" data-presets="react">
+                ${generatedCode}
+              </script>
+            </body>
+          </html>
+        `);
+        doc.close();
+        setPreviewLoaded(true);
+      } catch (err) {
+        console.error("Error loading preview:", err);
+        setError("Failed to load preview. Please check the generated code.");
+      }
+    };
+
+    if (generatedCode && iframeRef.current && !previewLoaded) {
+      loadPreview();
     }
-  };
+  }, [generatedCode, previewLoaded]);
 
   if (loading || loadingApp) {
     return (
@@ -151,78 +161,60 @@ function Preview() {
       </div>
 
       {/* Main Section */}
-      <div className="flex-grow flex flex-col items-center justify-center px-4 text-center relative z-10">
-        <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-          App Preview
-        </h1>
-
-        {/* Error Display */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-900/50 border border-red-700 rounded-lg max-w-2xl">
-            <p className="text-lg text-red-300">
-              <span className="text-red-400 font-semibold">Error:</span> {error}
-            </p>
-          </div>
-        )}
-
+      <div className="flex-1 flex flex-col pt-4 relative z-10">
         {/* App Info */}
         {appData && (
-          <div className="mb-6 p-4 bg-gray-800/50 border border-gray-700 rounded-lg max-w-2xl">
-            <h2 className="text-xl text-white font-semibold mb-2">
-              {appData.name}
-            </h2>
-            {appData.description && (
-              <p className="text-gray-300 mb-2">{appData.description}</p>
-            )}
-            <p className="text-sm text-gray-400">
-              <span className="text-blue-400 font-semibold">Status:</span>{" "}
-              <span
-                className={`capitalize ${
-                  appData.status === "completed"
-                    ? "text-green-400"
-                    : appData.status === "failed"
-                    ? "text-red-400"
-                    : "text-yellow-400"
-                }`}
-              >
-                {appData.status}
-              </span>
-            </p>
-            {appData.errorMessage && (
-              <p className="text-sm text-red-400 mt-1">
-                {appData.errorMessage}
+          <div className="flex justify-center mb-4">
+            <div className="p-2 bg-gray-800/50 border border-gray-700 rounded-lg">
+              <p className="text-xs text-gray-400">
+                <span className="text-blue-400 font-semibold">Status:</span>{" "}
+                <span
+                  className={`capitalize ${
+                    appData.status === "completed"
+                      ? "text-green-400"
+                      : appData.status === "failed"
+                      ? "text-red-400"
+                      : "text-yellow-400"
+                  }`}
+                >
+                  {appData.status}
+                </span>
               </p>
-            )}
+              {appData.errorMessage && (
+                <p className="text-sm text-red-400 mt-1">
+                  {appData.errorMessage}
+                </p>
+              )}
+            </div>
           </div>
-        )}
-
-        {/* Preview Controls */}
-        {generatedCode && !error && (
-          <button
-            onClick={loadPreview}
-            className="px-6 py-3 mb-4 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-medium transition-colors"
-          >
-            Load Preview
-          </button>
         )}
 
         {/* No Code Message */}
         {!generatedCode && !error && !loadingApp && (
-          <div className="mb-6 p-4 bg-yellow-900/50 border border-yellow-700 rounded-lg max-w-2xl">
-            <p className="text-lg text-yellow-300">
-              No generated code available for this app.
-            </p>
+          <div className="flex justify-center items-center flex-1">
+            <div className="p-4 bg-yellow-900/50 border border-yellow-700 rounded-lg max-w-2xl">
+              <p className="text-lg text-yellow-300">
+                No generated code available for this app.
+              </p>
+            </div>
           </div>
         )}
 
         {/* Preview iframe */}
         {generatedCode && !error && (
-          <div className="w-full max-w-6xl">
-            <iframe
-              ref={iframeRef}
-              title="App Preview"
-              className="w-full h-[600px] border border-gray-700 rounded-lg bg-white"
-            />
+          <div className="flex-1 flex flex-col px-4 pb-4">
+            {!previewLoaded && (
+              <div className="mb-4 p-4 bg-blue-900/50 border border-blue-700 rounded-lg text-center">
+                <p className="text-blue-300">Loading preview...</p>
+              </div>
+            )}
+            <div className="flex-1 max-w-7xl mx-auto w-full relative">
+              <iframe
+                ref={iframeRef}
+                title="App Preview"
+                className="absolute inset-0 w-full h-full border border-gray-700 rounded-lg bg-white"
+              />
+            </div>
           </div>
         )}
       </div>
