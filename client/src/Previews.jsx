@@ -15,11 +15,11 @@ import Navbar from "./components/Navbar";
 function Previews() {
   const navigate = useNavigate();
   const { isAuthenticated, loading } = useAuth();
-  const [previews, setPreviews] = useState([]);
-  const [loadingPreviews, setLoadingPreviews] = useState(true);
+  const [apps, setApps] = useState([]);
+  const [loadingApps, setLoadingApps] = useState(true);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const [selectedPreview, setSelectedPreview] = useState(null);
+  const [selectedApp, setSelectedApp] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
@@ -32,7 +32,7 @@ function Previews() {
 
   const fetchApps = useCallback(async () => {
     try {
-      setLoadingPreviews(true);
+      setLoadingApps(true);
       setError("");
 
       const token = localStorage.getItem("token");
@@ -68,62 +68,16 @@ function Previews() {
         createdAt: app.createdAt,
         requirementId: app.requirement?._id,
         requirementTitle: app.requirement?.title,
-        technologies: extractTechnologies(
-          app.requirement?.extractedRequirements
-        ),
-        features: extractFeatures(app.requirement?.extractedRequirements),
       }));
 
-      setPreviews(transformedApps);
-      setLoadingPreviews(false);
+      setApps(transformedApps);
+      setLoadingApps(false);
     } catch (error) {
       console.error("Error fetching apps:", error);
       setError("Failed to load your apps. Please try again.");
-      setLoadingPreviews(false);
+      setLoadingApps(false);
     }
   }, [navigate]);
-
-  // Helper function to extract technologies from requirements
-  const extractTechnologies = (extractedRequirements) => {
-    if (!extractedRequirements) return [];
-
-    const techs = [];
-    if (extractedRequirements.technicalRequirements) {
-      techs.push(...extractedRequirements.technicalRequirements);
-    }
-    if (extractedRequirements.frontend) {
-      techs.push(extractedRequirements.frontend);
-    }
-    if (extractedRequirements.backend) {
-      techs.push(extractedRequirements.backend);
-    }
-    if (extractedRequirements.database) {
-      techs.push(extractedRequirements.database);
-    }
-
-    return [...new Set(techs)].slice(0, 5); // Remove duplicates and limit to 5
-  };
-
-  // Helper function to extract features from requirements
-  const extractFeatures = (extractedRequirements) => {
-    if (!extractedRequirements) return [];
-
-    const features = [];
-    if (
-      extractedRequirements.features &&
-      Array.isArray(extractedRequirements.features)
-    ) {
-      features.push(...extractedRequirements.features);
-    }
-    if (
-      extractedRequirements.functionalRequirements &&
-      Array.isArray(extractedRequirements.functionalRequirements)
-    ) {
-      features.push(...extractedRequirements.functionalRequirements);
-    }
-
-    return features.slice(0, 5); // Limit to 5 features
-  };
 
   // Fetch user's apps from API
   useEffect(() => {
@@ -132,7 +86,7 @@ function Previews() {
     }
   }, [isAuthenticated, fetchApps]);
 
-  const deletePreview = async (id) => {
+  const deleteApp = async (id) => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -159,8 +113,8 @@ function Previews() {
       }
 
       // Remove the deleted app from local state
-      const updatedPreviews = previews.filter((prev) => prev._id !== id);
-      setPreviews(updatedPreviews);
+      const updatedApps = apps.filter((app) => app._id !== id);
+      setApps(updatedApps);
       setDeleteConfirm(null);
       setSuccessMessage("App deleted successfully!");
 
@@ -212,76 +166,74 @@ function Previews() {
     });
   };
 
-  const openModal = async (preview) => {
+  const openAppModal = async (app) => {
     try {
-      setSelectedPreview(preview);
+      setSelectedApp(app);
+      console.log({ app });
       setError(""); // Clear any error messages
       setSuccessMessage(""); // Clear any success messages
       setShowModal(true);
 
       // Fetch requirement details if requirement ID exists
-      if (preview.requirementId) {
+      if (app.requirementId) {
         const token = localStorage.getItem("token");
-
-        // Fetch apps by requirement ID and requirement details in parallel
-        const [appsResponse, requirementResponse] = await Promise.all([
-          fetch(
-            `${import.meta.env.VITE_API_URL}/api/apps/requirement/${
-              preview.requirementId
-            }`,
-            {
-              method: "GET",
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
-            }
-          ),
-          fetch(
-            `${import.meta.env.VITE_API_URL}/api/requirements/${
-              preview.requirementId
-            }`,
-            {
-              method: "GET",
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
-            }
-          ),
-        ]);
-
-        if (requirementResponse.ok) {
-          const requirementData = await requirementResponse.json();
-          // Update selectedPreview with complete requirement data
-          setSelectedPreview({
-            ...preview,
-            requirement: requirementData.data,
-          });
+        if (!token) {
+          setError("Authentication token not found");
+          return;
         }
 
-        // Optional: You can also use the apps data if needed
-        if (appsResponse.ok) {
-          const appsData = await appsResponse.json();
-          console.log("Related apps:", appsData); // For debugging
+        try {
+          // Only fetch requirement details - remove unused apps fetch
+          const requirementResponse = await fetch(
+            `${import.meta.env.VITE_API_URL}/api/requirements/${
+              app.requirementId
+            }`,
+            {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (requirementResponse.ok) {
+            const requirementData = await requirementResponse.json();
+
+            // Update selectedApp with complete requirement data
+            setSelectedApp((prevApp) => ({
+              ...prevApp,
+              requirement: requirementData.data,
+            }));
+          } else if (requirementResponse.status === 401) {
+            navigate("/login");
+            return;
+          } else {
+            throw new Error(
+              `HTTP ${requirementResponse.status}: Failed to fetch requirement details`
+            );
+          }
+        } catch (fetchError) {
+          console.error("Error fetching requirement details:", fetchError);
+          setError("Failed to load requirement details. Please try again.");
         }
       }
     } catch (error) {
-      console.error("Error fetching requirement details:", error);
-      setError("Failed to load requirement details");
+      console.error("Error opening app modal:", error);
+      setError("Failed to open app details");
     }
   };
 
   const closeModal = () => {
     setShowModal(false);
-    setSelectedPreview(null);
+    setSelectedApp(null);
   };
 
-  const viewPreview = (previewId) => {
-    navigate(`/preview/${previewId}`);
+  const viewApp = (appId) => {
+    navigate(`/preview/${appId}`);
   };
 
-  if (loading || loadingPreviews) {
+  if (loading || loadingApps) {
     return (
       <div className="min-h-screen bg-gray-900 text-white">
         <Navbar />
@@ -302,7 +254,7 @@ function Previews() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-4xl font-bold text-white mb-2">
-                App Previews
+                Applications
               </h1>
               <p className="text-gray-400">
                 View generated application previews and demos
@@ -324,7 +276,7 @@ function Previews() {
             </div>
           )}
 
-          {!loadingPreviews && previews.length === 0 ? (
+          {!loadingApps && apps.length === 0 ? (
             <div className="text-center py-12">
               <FiMonitor className="mx-auto h-16 w-16 text-gray-600 mb-4" />
               <h3 className="text-xl font-semibold text-gray-400 mb-2">
@@ -337,19 +289,17 @@ function Previews() {
             </div>
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {previews.map((preview) => (
+              {apps.map((app) => (
                 <div
-                  key={preview._id}
-                  onClick={() =>
-                    preview.status !== "failed" && openModal(preview)
-                  }
+                  key={app._id}
+                  onClick={() => app.status !== "failed" && openAppModal(app)}
                   title={
-                    preview.status === "failed"
+                    app.status === "failed"
                       ? "App generation failed - Cannot preview"
                       : "Click to view details"
                   }
                   className={`bg-gray-800 border border-gray-700 rounded-lg overflow-hidden transition-colors duration-200 ${
-                    preview.status !== "failed"
+                    app.status !== "failed"
                       ? "hover:border-gray-600 cursor-pointer"
                       : "cursor-not-allowed opacity-75"
                   }`}
@@ -358,14 +308,14 @@ function Previews() {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <h3 className="text-lg font-semibold text-white mb-1">
-                          {preview.appName}
+                          {app.appName}
                         </h3>
-                        {preview.status != "failed" && (
+                        {app.status != "failed" && (
                           <p className="text-sm text-gray-400 mb-3 line-clamp-2">
-                            {preview.description}
+                            {app.description}
                           </p>
                         )}
-                        {preview.status === "failed" && (
+                        {app.status === "failed" && (
                           <div className="text-xs border-red-400 bg-red-800/30 px-2 py-1 rounded-md mb-3">
                             Generation failed - Cannot access preview
                           </div>
@@ -375,10 +325,10 @@ function Previews() {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            setDeleteConfirm(preview._id);
+                            setDeleteConfirm(app._id);
                           }}
                           className="text-red-400 hover:text-red-300 transition-colors duration-200"
-                          title="Delete Preview"
+                          title="Delete App"
                         >
                           <FiTrash2 className="h-5 w-5" />
                         </button>
@@ -388,18 +338,18 @@ function Previews() {
                     <div className="flex items-center justify-between text-xs text-gray-500 mt-3">
                       <div className="flex items-center">
                         <FiCalendar className="mr-1" />
-                        {formatDate(preview.createdAt)}
+                        {formatDate(app.createdAt)}
                       </div>
                       <span
                         className={`text-xs px-2 py-1 rounded ${
-                          preview.status === "completed"
+                          app.status === "completed"
                             ? "bg-green-900/80 text-green-200"
-                            : preview.status === "generating"
+                            : app.status === "generating"
                             ? "bg-yellow-900/80 text-yellow-200"
                             : "bg-red-900/80 text-red-200"
                         }`}
                       >
-                        {getStatusText(preview.status)}
+                        {getStatusText(app.status)}
                       </span>
                     </div>
                   </div>
@@ -416,12 +366,12 @@ function Previews() {
                   Confirm Deletion
                 </h3>
                 <p className="text-gray-300 mb-6">
-                  Are you sure you want to delete this preview? This action
-                  cannot be undone.
+                  Are you sure you want to delete this app? This action cannot
+                  be undone.
                 </p>
                 <div className="flex space-x-4">
                   <button
-                    onClick={() => deletePreview(deleteConfirm)}
+                    onClick={() => deleteApp(deleteConfirm)}
                     className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
                   >
                     Delete
@@ -438,30 +388,30 @@ function Previews() {
           )}
 
           {/* Details Modal */}
-          {showModal && selectedPreview && (
+          {showModal && selectedApp && (
             <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 p-4">
               <div className="bg-gray-800 border border-gray-700 rounded-lg max-w-5xl w-full max-h-[90vh] overflow-y-auto">
                 <div className="p-6">
                   <div className="flex items-start justify-between mb-6">
                     <div className="flex-1">
                       <h2 className="text-2xl font-bold text-white mb-2">
-                        {selectedPreview.appName}
+                        {selectedApp.appName}
                       </h2>
                       <div className="flex items-center space-x-2 mt-2">
-                        {getStatusIcon(selectedPreview.status)}
+                        {getStatusIcon(selectedApp.status)}
                         <span className="text-gray-400">
-                          {getStatusText(selectedPreview.status)}
+                          {getStatusText(selectedApp.status)}
                         </span>
                         <span className="text-gray-500">•</span>
                         <span className="text-gray-400">
-                          {formatDate(selectedPreview.createdAt)}
+                          {formatDate(selectedApp.createdAt)}
                         </span>
                       </div>
                     </div>
                     <div className="flex space-x-2">
-                      {selectedPreview.status === "completed" && (
+                      {selectedApp.status === "completed" && (
                         <button
-                          onClick={() => viewPreview(selectedPreview._id)}
+                          onClick={() => viewApp(selectedApp._id)}
                           className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center"
                         >
                           <FiExternalLink className="mr-2" /> View Demo
@@ -507,26 +457,26 @@ function Previews() {
                     </label>
                     <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
                       <p className="text-gray-300 whitespace-pre-wrap">
-                        {selectedPreview.generatedCode || "No code available."}
+                        {selectedApp.generatedCode || "No code available."}
                       </p>
                     </div>
                   </div>
 
                   {/* Requirements Details */}
-                  {selectedPreview.requirement &&
-                    selectedPreview.requirement.extractedRequirements && (
+                  {selectedApp.requirement &&
+                    selectedApp.requirement.extractedRequirements && (
                       <div className="space-y-6 mt-6 pt-6 border-t border-gray-700">
                         {/* Requirement Features (if different from generated app features) */}
-                        {selectedPreview.requirement.extractedRequirements
+                        {selectedApp.requirement.extractedRequirements
                           .features &&
-                          selectedPreview.requirement.extractedRequirements
-                            .features.length > 0 && (
+                          selectedApp.requirement.extractedRequirements.features
+                            .length > 0 && (
                             <div>
                               <label className="block text-lg font-semibold text-white mb-3">
                                 Required Features
                               </label>
                               <div className="space-y-3">
-                                {selectedPreview.requirement.extractedRequirements.features.map(
+                                {selectedApp.requirement.extractedRequirements.features.map(
                                   (feature, index) => (
                                     <div
                                       key={index}
@@ -560,9 +510,9 @@ function Previews() {
                           )}
 
                         {/* Technical Requirements */}
-                        {selectedPreview.requirement.extractedRequirements
+                        {selectedApp.requirement.extractedRequirements
                           .technicalRequirements &&
-                          selectedPreview.requirement.extractedRequirements
+                          selectedApp.requirement.extractedRequirements
                             .technicalRequirements.length > 0 && (
                             <div>
                               <label className="block text-lg font-semibold text-white mb-3">
@@ -570,7 +520,7 @@ function Previews() {
                               </label>
                               <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
                                 <ul className="space-y-2">
-                                  {selectedPreview.requirement.extractedRequirements.technicalRequirements.map(
+                                  {selectedApp.requirement.extractedRequirements.technicalRequirements.map(
                                     (req, index) => (
                                       <li
                                         key={index}
