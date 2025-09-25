@@ -202,10 +202,12 @@ function Login() {
             {/* Name field (only for signup) */}
             {isSignup && (
               <div className="relative">
-                <FiUser
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-                  size={isMobile ? 18 : 20}
-                />
+                {isDesktop && (
+                  <FiUser
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+                    size={20}
+                  />
+                )}
                 <input
                   type="text"
                   name="name"
@@ -213,8 +215,10 @@ function Login() {
                   required={isSignup}
                   className={`w-full ${
                     isMobile
-                      ? "py-3 pl-10 pr-4 text-base"
-                      : "py-4 pl-12 pr-6 text-lg"
+                      ? "py-3 px-4 text-base"
+                      : isDesktop
+                      ? "py-4 pl-12 pr-6 text-lg"
+                      : "py-4 px-6 text-lg"
                   } rounded-lg bg-gray-800 text-white border border-gray-700 focus:border-blue-500 focus:outline-none shadow-lg transition-all duration-200 ${
                     touchCapable ? "touch-target" : ""
                   }`}
@@ -226,10 +230,12 @@ function Login() {
 
             {/* Email field */}
             <div className="relative">
-              <FiMail
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={isMobile ? 18 : 20}
-              />
+              {isDesktop && (
+                <FiMail
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  size={20}
+                />
+              )}
               <input
                 type="email"
                 name="email"
@@ -237,8 +243,10 @@ function Login() {
                 required
                 className={`w-full ${
                   isMobile
-                    ? "py-3 pl-10 pr-4 text-base"
-                    : "py-4 pl-12 pr-6 text-lg"
+                    ? "py-3 px-4 text-base"
+                    : isDesktop
+                    ? "py-4 pl-12 pr-6 text-lg"
+                    : "py-4 px-6 text-lg"
                 } rounded-lg bg-gray-800 text-white border border-gray-700 focus:border-blue-500 focus:outline-none shadow-lg transition-all duration-200 ${
                   touchCapable ? "touch-target" : ""
                 }`}
@@ -249,10 +257,12 @@ function Login() {
 
             {/* Password field */}
             <div className="relative">
-              <FiLock
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={isMobile ? 18 : 20}
-              />
+              {isDesktop && (
+                <FiLock
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  size={20}
+                />
+              )}
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
@@ -260,8 +270,10 @@ function Login() {
                 required
                 className={`w-full ${
                   isMobile
-                    ? "py-3 pl-10 pr-10 text-base"
-                    : "py-4 pl-12 pr-12 text-lg"
+                    ? "py-3 px-4 pr-10 text-base"
+                    : isDesktop
+                    ? "py-4 pl-12 pr-12 text-lg"
+                    : "py-4 px-6 pr-12 text-lg"
                 } rounded-lg bg-gray-800 text-white border border-gray-700 focus:border-blue-500 focus:outline-none shadow-lg transition-all duration-200 ${
                   touchCapable ? "touch-target" : ""
                 }`}
@@ -290,10 +302,12 @@ function Login() {
             {/* Confirm Password field (only for signup) */}
             {isSignup && (
               <div className="relative">
-                <FiLock
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-                  size={isMobile ? 18 : 20}
-                />
+                {isDesktop && (
+                  <FiLock
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+                    size={20}
+                  />
+                )}
                 <input
                   type={showPassword ? "text" : "password"}
                   name="confirmPassword"
@@ -301,8 +315,10 @@ function Login() {
                   required={isSignup}
                   className={`w-full ${
                     isMobile
-                      ? "py-3 pl-10 pr-4 text-base"
-                      : "py-4 pl-12 pr-6 text-lg"
+                      ? "py-3 px-4 text-base"
+                      : isDesktop
+                      ? "py-4 pl-12 pr-6 text-lg"
+                      : "py-4 px-6 text-lg"
                   } rounded-lg bg-gray-800 text-white border border-gray-700 focus:border-blue-500 focus:outline-none shadow-lg transition-all duration-200 ${
                     touchCapable ? "touch-target" : ""
                   }`}

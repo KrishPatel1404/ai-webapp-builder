@@ -9,7 +9,7 @@ import { useResponsive } from "./hooks/useResponsive";
 function Profile() {
   const navigate = useNavigate();
   const { user, updateUser } = useAuth();
-  const { isMobile, isTablet, touchCapable } = useResponsive();
+  const { isMobile, isTablet, isDesktop, touchCapable } = useResponsive();
   const [formData, setFormData] = useState({
     name: user?.name || "",
     email: user?.email || "",
@@ -153,10 +153,12 @@ function Profile() {
           >
             {/* Name field */}
             <div className="relative">
-              <FiUser
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={isMobile ? 18 : 20}
-              />
+              {isDesktop && (
+                <FiUser
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  size={20}
+                />
+              )}
               <input
                 type="text"
                 name="name"
@@ -164,8 +166,10 @@ function Profile() {
                 required
                 className={`w-full ${
                   isMobile
-                    ? "py-3 pl-10 pr-4 text-base"
-                    : "py-4 pl-12 pr-6 text-lg"
+                    ? "py-3 px-4 text-base"
+                    : isDesktop
+                    ? "py-4 pl-12 pr-6 text-lg"
+                    : "py-4 px-6 text-lg"
                 } rounded-lg bg-gray-800 text-white border border-gray-700 focus:border-blue-500 focus:outline-none shadow-lg transition-all duration-200 ${
                   touchCapable ? "touch-target" : ""
                 }`}
@@ -176,10 +180,12 @@ function Profile() {
 
             {/* Email field */}
             <div className="relative">
-              <FiMail
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={isMobile ? 18 : 20}
-              />
+              {isDesktop && (
+                <FiMail
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  size={20}
+                />
+              )}
               <input
                 type="email"
                 name="email"
@@ -187,8 +193,10 @@ function Profile() {
                 required
                 className={`w-full ${
                   isMobile
-                    ? "py-3 pl-10 pr-4 text-base"
-                    : "py-4 pl-12 pr-6 text-lg"
+                    ? "py-3 px-4 text-base"
+                    : isDesktop
+                    ? "py-4 pl-12 pr-6 text-lg"
+                    : "py-4 px-6 text-lg"
                 } rounded-lg bg-gray-800 text-white border border-gray-700 focus:border-blue-500 focus:outline-none shadow-lg transition-all duration-200 ${
                   touchCapable ? "touch-target" : ""
                 }`}
