@@ -573,8 +573,6 @@ function Apps() {
                           {selectedApp.status === "completed" && (
                             <Link
                               to={`/preview?id=${selectedApp._id}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
                               className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center"
                             >
                               <FiExternalLink className="mr-2" /> View

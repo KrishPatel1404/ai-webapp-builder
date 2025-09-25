@@ -16,7 +16,6 @@ import { useResponsive } from "./hooks/useResponsive";
 function Requirements() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  // const { user, isAuthenticated, loading } = useAuth();
   const { isAuthenticated, loading } = useAuth();
   const { isMobile, isTablet, touchCapable } = useResponsive();
   const [requirements, setRequirements] = useState([]);
