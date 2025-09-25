@@ -1,35 +1,56 @@
 import React from "react";
 
 const AnimatedBackground = ({ animate = true }) => {
-  // Create an array of circles with different properties, positioned only on left (0-25%) and right (75-100%) sides
-  const circles = [
-    { left: "5%", size: 80, delay: 0, duration: 22 },
-    { left: "15%", size: 32, delay: 0.5, duration: 30 },
-    { left: "20%", size: 30, delay: 1, duration: 24 },
-    { left: "80%", size: 60, delay: 0, duration: 17 },
-    { left: "85%", size: 40, delay: 0, duration: 22 },
-    { left: "90%", size: 40, delay: 0.8, duration: 24 },
-    { left: "10%", size: 30, delay: 1.5, duration: 22 },
-    { left: "95%", size: 25, delay: 2, duration: 41 },
-    { left: "2%", size: 35, delay: 0.3, duration: 32 },
-    { left: "88%", size: 70, delay: 0, duration: 14 },
-    { left: "12%", size: 50, delay: 1.2, duration: 19 },
-    { left: "78%", size: 35, delay: 1.8, duration: 27 },
-    { left: "22%", size: 32, delay: 2.5, duration: 32 },
-    { left: "92%", size: 45, delay: 3, duration: 13 },
+  // Popular app icons using emojis and symbols
+  const appIcons = [
+    "📱",
+    "💬",
+    "📧",
+    "🌐",
+    "📷",
+    "🎵",
+    "🎮",
+    "📺",
+    "🛒",
+    "🏪",
+    "🎬",
+    "📊",
+    "💰",
+    "🔒",
+    "☁️",
+    "🗺️",
+  ];
+
+  // Create an array of app icons with different properties, positioned only on left (0-25%) and right (75-100%) sides
+  const floatingApps = [
+    { left: "5%", size: 90, delay: 0, duration: 22, icon: appIcons[0] },
+    { left: "15%", size: 42, delay: 0.5, duration: 30, icon: appIcons[1] },
+    { left: "20%", size: 40, delay: 1, duration: 24, icon: appIcons[2] },
+    { left: "80%", size: 60, delay: 0, duration: 17, icon: appIcons[3] },
+    { left: "85%", size: 50, delay: 0, duration: 22, icon: appIcons[4] },
+    { left: "90%", size: 50, delay: 0.8, duration: 24, icon: appIcons[5] },
+    { left: "10%", size: 40, delay: 1.5, duration: 22, icon: appIcons[6] },
+    { left: "95%", size: 35, delay: 2, duration: 41, icon: appIcons[7] },
+    { left: "2%", size: 45, delay: 0.3, duration: 32, icon: appIcons[8] },
+    { left: "88%", size: 75, delay: 0, duration: 14, icon: appIcons[9] },
+    { left: "12%", size: 60, delay: 1.2, duration: 19, icon: appIcons[10] },
+    { left: "78%", size: 45, delay: 1.8, duration: 27, icon: appIcons[11] },
+    { left: "22%", size: 42, delay: 2.5, duration: 32, icon: appIcons[12] },
+    { left: "92%", size: 55, delay: 3, duration: 13, icon: appIcons[13] },
   ];
 
   const floatAnimation = `
     @keyframes floatUp {
       0% {
-        transform: translateY(0) rotate(0deg);
+        transform: translateY(0) rotate(0deg) scale(1);
+        opacity: 0.8;
+      }
+      50% {
         opacity: 1;
-        border-radius: 0;
       }
       100% {
-        transform: translateY(-1000px) rotate(720deg);
+        transform: translateY(-1000px) rotate(360deg) scale(0.5);
         opacity: 0;
-        border-radius: 50%;
       }
     }
   `;
@@ -44,22 +65,25 @@ const AnimatedBackground = ({ animate = true }) => {
       {/* Pattern overlay on dark background */}
       <div className="absolute inset-0 bg-[radial-gradient(circle,_rgba(240,240,240,0.05)_1.5px,_transparent_1px)] [background-size:30px_30px]"></div>
 
-      {/* Animated Circles */}
+      {/* Animated App Icons */}
       {animate && (
         <div className="absolute inset-0">
-          {circles.map((circle, index) => (
+          {floatingApps.map((app, index) => (
             <div
               key={index}
-              className="absolute block bg-white/20"
+              className="absolute flex items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl shadow-lg border border-white/20"
               style={{
-                left: circle.left,
-                width: `${circle.size}px`,
-                height: `${circle.size}px`,
+                left: app.left,
+                width: `${app.size}px`,
+                height: `${app.size}px`,
                 bottom: "-150px",
-                animation: `floatUp ${circle.duration}s linear infinite`,
-                animationDelay: `${circle.delay}s`,
+                animation: `floatUp ${app.duration}s linear infinite`,
+                animationDelay: `${app.delay}s`,
+                fontSize: `${app.size * 0.6}px`,
               }}
-            />
+            >
+              {app.icon}
+            </div>
           ))}
         </div>
       )}
