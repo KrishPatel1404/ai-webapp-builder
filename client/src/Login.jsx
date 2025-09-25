@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FiEye,
   FiEyeOff,
@@ -12,6 +12,72 @@ import { useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
 import AnimatedBackground from "./components/AnimatedBackground";
 import { useResponsive } from "./hooks/useResponsive";
+
+// Custom hook for text shuffle effect
+const useTextShuffle = (finalText, duration = 2000) => {
+  const [displayText, setDisplayText] = useState("");
+  const [isComplete, setIsComplete] = useState(false);
+
+  useEffect(() => {
+    const characters =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+    let iteration = 0;
+    const totalIterations = Math.floor(duration / 50);
+
+    const interval = setInterval(() => {
+      setDisplayText(
+        finalText
+          .split("")
+          .map((letter, index) => {
+            if (letter === " ") return " ";
+
+            if (iteration > index * (totalIterations / finalText.length)) {
+              return finalText[index];
+            }
+
+            return characters[Math.floor(Math.random() * characters.length)];
+          })
+          .join("")
+      );
+
+      iteration++;
+
+      if (iteration > totalIterations) {
+        setDisplayText(finalText);
+        setIsComplete(true);
+        clearInterval(interval);
+      }
+    }, 50);
+
+    return () => clearInterval(interval);
+  }, [finalText, duration]);
+
+  return { displayText, isComplete };
+};
+
+// Text shuffle component
+const ShuffleText = ({ children, className, duration = 2000 }) => {
+  const text = typeof children === "string" ? children : "";
+  const { displayText, isComplete } = useTextShuffle(text, duration);
+
+  if (typeof children !== "string") {
+    return <span className={className}>{children}</span>;
+  }
+  return (
+    <span className={className}>
+      {displayText.split("").map((char, index) => (
+        <span
+          key={index}
+          className={
+            char === " " ? "" : !isComplete ? "font-mono" : "font-mono"
+          }
+        >
+          {char}
+        </span>
+      ))}
+    </span>
+  );
+};
 
 function Login() {
   const navigate = useNavigate();
@@ -122,7 +188,11 @@ function Login() {
               touchCapable ? "active:text-blue-200" : "hover:text-blue-200"
             } transition-colors duration-200`}
           >
-            {isSignup ? "Create Account" : "Welcome Back"}
+            {isSignup ? (
+              "Create Account"
+            ) : (
+              <ShuffleText duration={1000}>Welcome Back</ShuffleText>
+            )}
           </h1>
 
           <form
