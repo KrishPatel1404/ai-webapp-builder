@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FiEye,
   FiEyeOff,
@@ -10,10 +10,79 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
+import AnimatedBackground from "./components/AnimatedBackground";
+import { useResponsive } from "./hooks/useResponsive";
+
+// Custom hook for text shuffle effect
+const useTextShuffle = (finalText, duration = 2000) => {
+  const [displayText, setDisplayText] = useState("");
+  const [isComplete, setIsComplete] = useState(false);
+
+  useEffect(() => {
+    const characters =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+    let iteration = 0;
+    const totalIterations = Math.floor(duration / 50);
+
+    const interval = setInterval(() => {
+      setDisplayText(
+        finalText
+          .split("")
+          .map((letter, index) => {
+            if (letter === " ") return " ";
+
+            if (iteration > index * (totalIterations / finalText.length)) {
+              return finalText[index];
+            }
+
+            return characters[Math.floor(Math.random() * characters.length)];
+          })
+          .join("")
+      );
+
+      iteration++;
+
+      if (iteration > totalIterations) {
+        setDisplayText(finalText);
+        setIsComplete(true);
+        clearInterval(interval);
+      }
+    }, 50);
+
+    return () => clearInterval(interval);
+  }, [finalText, duration]);
+
+  return { displayText, isComplete };
+};
+
+// Text shuffle component
+const ShuffleText = ({ children, className, duration = 2000 }) => {
+  const text = typeof children === "string" ? children : "";
+  const { displayText, isComplete } = useTextShuffle(text, duration);
+
+  if (typeof children !== "string") {
+    return <span className={className}>{children}</span>;
+  }
+  return (
+    <span className={className}>
+      {displayText.split("").map((char, index) => (
+        <span
+          key={index}
+          className={
+            char === " " ? "" : !isComplete ? "font-mono" : "font-mono"
+          }
+        >
+          {char}
+        </span>
+      ))}
+    </span>
+  );
+};
 
 function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { isMobile, isTablet, isDesktop, touchCapable } = useResponsive();
   const [isSignup, setIsSignup] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -92,31 +161,67 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-900">
+    <div className="min-h-screen flex flex-col relative overflow-hidden bg-gray-900 text-white">
+      {/* Animated Background */}
+      <AnimatedBackground animate={isDesktop} />
+
       {/* Navbar */}
-      <Navbar />
+      <div className="relative z-10">
+        <Navbar />
+      </div>
 
       {/* Main content */}
-      <div className="flex-grow flex flex-col items-center justify-center px-4">
-        <div className="w-full max-w-md">
-          <h1 className="text-4xl font-bold text-white mb-8 text-center hover:text-blue-200 transition-colors duration-200">
-            {isSignup ? "Create Account" : "Welcome Back"}
+      <div
+        className={`flex-grow flex flex-col items-center justify-center px-4 relative z-10 ${
+          isMobile ? "py-6" : "py-8"
+        }`}
+      >
+        <div
+          className={`w-full ${
+            isMobile ? "max-w-sm" : isTablet ? "max-w-lg" : "max-w-md"
+          }`}
+        >
+          <h1
+            className={`font-bold text-white ${
+              isMobile ? "mb-6 text-3xl" : "mb-8 text-4xl"
+            } text-center ${
+              touchCapable ? "active:text-blue-200" : "hover:text-blue-200"
+            } transition-colors duration-200`}
+          >
+            {isSignup ? (
+              "Create Account"
+            ) : (
+              <ShuffleText duration={1000}>Welcome Back</ShuffleText>
+            )}
           </h1>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form
+            onSubmit={handleSubmit}
+            className={`${isMobile ? "space-y-4" : "space-y-6"}`}
+          >
             {/* Name field (only for signup) */}
             {isSignup && (
               <div className="relative">
-                <FiUser
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-                  size={20}
-                />
+                {isDesktop && (
+                  <FiUser
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+                    size={20}
+                  />
+                )}
                 <input
                   type="text"
                   name="name"
                   placeholder="Full Name"
                   required={isSignup}
-                  className="w-full py-4 pl-12 pr-6 rounded-lg bg-gray-800 text-white border border-gray-700 focus:border-blue-500 focus:outline-none text-lg shadow-lg transition-all duration-200"
+                  className={`w-full ${
+                    isMobile
+                      ? "py-3 px-4 text-base"
+                      : isDesktop
+                      ? "py-4 pl-12 pr-6 text-lg"
+                      : "py-4 px-6 text-lg"
+                  } rounded-lg bg-gray-800 text-white border border-gray-700 focus:border-blue-500 focus:outline-none shadow-lg transition-all duration-200 ${
+                    touchCapable ? "touch-target" : ""
+                  }`}
                   value={formData.name}
                   onChange={handleInputChange}
                 />
@@ -125,16 +230,26 @@ function Login() {
 
             {/* Email field */}
             <div className="relative">
-              <FiMail
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={20}
-              />
+              {isDesktop && (
+                <FiMail
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  size={20}
+                />
+              )}
               <input
                 type="email"
                 name="email"
                 placeholder="Email Address"
                 required
-                className="w-full py-4 pl-12 pr-6 rounded-lg bg-gray-800 text-white border border-gray-700 focus:border-blue-500 focus:outline-none text-lg shadow-lg transition-all duration-200"
+                className={`w-full ${
+                  isMobile
+                    ? "py-3 px-4 text-base"
+                    : isDesktop
+                    ? "py-4 pl-12 pr-6 text-lg"
+                    : "py-4 px-6 text-lg"
+                } rounded-lg bg-gray-800 text-white border border-gray-700 focus:border-blue-500 focus:outline-none shadow-lg transition-all duration-200 ${
+                  touchCapable ? "touch-target" : ""
+                }`}
                 value={formData.email}
                 onChange={handleInputChange}
               />
@@ -142,41 +257,71 @@ function Login() {
 
             {/* Password field */}
             <div className="relative">
-              <FiLock
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={20}
-              />
+              {isDesktop && (
+                <FiLock
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  size={20}
+                />
+              )}
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
                 placeholder="Password"
                 required
-                className="w-full py-4 pl-12 pr-12 rounded-lg bg-gray-800 text-white border border-gray-700 focus:border-blue-500 focus:outline-none text-lg shadow-lg transition-all duration-200"
+                className={`w-full ${
+                  isMobile
+                    ? "py-3 px-4 pr-10 text-base"
+                    : isDesktop
+                    ? "py-4 pl-12 pr-12 text-lg"
+                    : "py-4 px-6 pr-12 text-lg"
+                } rounded-lg bg-gray-800 text-white border border-gray-700 focus:border-blue-500 focus:outline-none shadow-lg transition-all duration-200 ${
+                  touchCapable ? "touch-target" : ""
+                }`}
                 value={formData.password}
                 onChange={handleInputChange}
               />
               <button
                 type="button"
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-400 transition-colors duration-200"
+                className={`absolute ${
+                  isMobile ? "right-3" : "right-4"
+                } top-1/2 transform -translate-y-1/2 text-gray-400 ${
+                  touchCapable ? "active:text-blue-400" : "hover:text-blue-400"
+                } transition-colors duration-200 ${
+                  touchCapable ? "p-2" : "p-1"
+                }`}
                 onClick={() => setShowPassword(!showPassword)}
               >
-                {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
+                {showPassword ? (
+                  <FiEyeOff size={isMobile ? 18 : 20} />
+                ) : (
+                  <FiEye size={isMobile ? 18 : 20} />
+                )}
               </button>
             </div>
 
             {/* Confirm Password field (only for signup) */}
             {isSignup && (
               <div className="relative">
-                <FiLock
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-                  size={20}
-                />
+                {isDesktop && (
+                  <FiLock
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+                    size={20}
+                  />
+                )}
                 <input
                   type={showPassword ? "text" : "password"}
                   name="confirmPassword"
                   placeholder="Confirm Password"
                   required={isSignup}
-                  className="w-full py-4 pl-12 pr-6 rounded-lg bg-gray-800 text-white border border-gray-700 focus:border-blue-500 focus:outline-none text-lg shadow-lg transition-all duration-200"
+                  className={`w-full ${
+                    isMobile
+                      ? "py-3 px-4 text-base"
+                      : isDesktop
+                      ? "py-4 pl-12 pr-6 text-lg"
+                      : "py-4 px-6 text-lg"
+                  } rounded-lg bg-gray-800 text-white border border-gray-700 focus:border-blue-500 focus:outline-none shadow-lg transition-all duration-200 ${
+                    touchCapable ? "touch-target" : ""
+                  }`}
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
                 />
@@ -187,11 +332,22 @@ function Login() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-4 px-6 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white font-semibold text-lg shadow-lg transition-all duration-200 transform hover:scale-105 disabled:hover:scale-100 flex items-center justify-center gap-2"
+              className={`w-full ${
+                isMobile ? "py-3 px-4 text-base" : "py-4 px-6 text-lg"
+              } rounded-lg bg-blue-600 ${
+                touchCapable ? "active:bg-blue-700" : "hover:bg-blue-700"
+              } disabled:bg-blue-400 disabled:cursor-not-allowed text-white font-semibold shadow-lg transition-all duration-200 transform ${
+                touchCapable ? "" : "hover:scale-105"
+              } disabled:hover:scale-100 flex items-center justify-center gap-2 ${
+                touchCapable ? "touch-target" : ""
+              }`}
             >
               {isLoading ? (
                 <>
-                  <FiLoader className="animate-spin" size={20} />
+                  <FiLoader
+                    className="animate-spin"
+                    size={isMobile ? 18 : 20}
+                  />
                   Loading...
                 </>
               ) : isSignup ? (
@@ -203,11 +359,19 @@ function Login() {
           </form>
 
           {/* Toggle between login/signup */}
-          <p className="text-gray-400 mt-6 text-center">
+          <p
+            className={`text-gray-400 ${
+              isMobile ? "mt-4 text-sm" : "mt-6 text-base"
+            } text-center`}
+          >
             {isSignup ? "Already have an account?" : "Don't have an account?"}{" "}
             <button
               onClick={toggleMode}
-              className="text-blue-400 hover:text-blue-300 transition-colors duration-200 font-semibold"
+              className={`text-blue-400 ${
+                touchCapable ? "active:text-blue-300" : "hover:text-blue-300"
+              } transition-colors duration-200 font-semibold ${
+                touchCapable ? "touch-target" : ""
+              }`}
             >
               {isSignup ? "Sign In" : "Sign Up"}
             </button>

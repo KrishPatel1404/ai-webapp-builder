@@ -1,1 +1,116 @@
 @import "tailwindcss";
+
+/* High DPI and Retina display optimizations */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 2dppx) {
+  /* Retina displays: iPhone 14+, Samsung S20+ etc. */
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Slightly increase font sizes on high DPI mobile */
+  @media (max-width: 768px) {
+    .text-sm {
+      font-size: 0.92rem;
+    }
+    .text-base {
+      font-size: 1.05rem;
+    }
+    .text-lg {
+      font-size: 1.2rem;
+    }
+    .text-xl {
+      font-size: 1.35rem;
+    }
+  }
+}
+
+@media (-webkit-min-device-pixel-ratio: 3), (min-resolution: 3dppx) {
+  /* Ultra high DPI: iPhone 16, Samsung S23+ etc. */
+  @media (max-width: 768px) {
+    .text-sm {
+      font-size: 0.95rem;
+    }
+    .text-base {
+      font-size: 1.1rem;
+    }
+    .text-lg {
+      font-size: 1.25rem;
+    }
+    .text-xl {
+      font-size: 1.4rem;
+    }
+
+    /* Ensure touch targets are large enough */
+    button,
+    input,
+    textarea,
+    select,
+    a[role="button"] {
+      min-height: 44px;
+      min-width: 44px;
+    }
+
+    /* Better line spacing for readability */
+    p,
+    span,
+    div {
+      line-height: 1.6;
+    }
+  }
+}
+
+/* Touch-friendly improvements */
+@media (hover: none) and (pointer: coarse) {
+  /* Mobile devices with touch */
+  button:hover {
+    /* Disable hover effects on touch devices */
+    transform: none;
+  }
+
+  button:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+  }
+
+  /* Larger tap targets */
+  .touch-target {
+    min-height: 48px;
+    min-width: 48px;
+    padding: 12px;
+  }
+}
+
+/* Shake animation for input errors */
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-8px);
+  }
+  75% {
+    transform: translateX(8px);
+  }
+}
+
+.animate-shake {
+  animation: shake 0.2s ease-in-out;
+}
+
+/* Fade and slide-down animation for error messages */
+@keyframes fadeSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-slide-down {
+  animation: fadeSlideDown 200ms ease-out;
+}
