@@ -17,7 +17,7 @@ function Preview() {
   // Show loading state while checking authentication
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen flex flex-col relative overflow-hidden bg-gray-900 text-white">
         <div className="text-gray-600">Loading...</div>
       </div>
     );
@@ -29,24 +29,22 @@ function Preview() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <Navbar />
+    <div className="min-h-screen flex flex-col relative overflow-hidden bg-gray-900 text-white">
+      {/* Pattern overlay on dark background */}
+      <div className="absolute inset-0 bg-gray-900">
+        <div className="absolute inset-0 bg-[radial-gradient(circle,_rgba(240,240,240,0.05)_1.5px,_transparent_1px)] [background-size:30px_30px]"></div>
+      </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="text-center">
-          {/* Welcome Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-gray-800 mb-4">
-              Hello, World! 👋
-            </h1>
-            <p className="text-xl text-gray-600 mb-2">
-              Welcome to the Preview page, {user?.name || "User"}!
-            </p>
-            <p className="text-gray-500">
-              This is a simple authenticated preview area.
-            </p>
-          </div>
-        </div>
+      {/* Navbar on top */}
+      <div className="relative z-10">
+        <Navbar />
+      </div>
+
+      {/* Main Section */}
+      <div className="flex-grow flex flex-col items-center justify-center px-4 text-center relative z-10">
+        <h1 className="text-6xl md:text-6xl font-bold text-white mb-2 text-center transition-colors duration-200">
+          Welcome to the Preview page, {user?.name || "User"}!
+        </h1>
       </div>
     </div>
   );
