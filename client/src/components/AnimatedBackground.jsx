@@ -1,24 +1,24 @@
 import React from "react";
 
-const AnimatedBackground = ({ animate = true }) => {
-  // Popular app icons using emojis and symbols
+const AnimatedBackground = ({ animate = true, showIcons = false }) => {
+  // Tech-related icons using emojis and symbols
   const appIcons = [
     "📱",
+    "⚡",
     "💬",
-    "📧",
     "🌐",
     "📷",
+    "🖥️",
     "🎵",
+    "📺",
+    "⚙️",
+    "🛠️",
+    "💾",
     "🎮",
     "📺",
-    "🛒",
-    "🏪",
-    "🎬",
-    "📊",
-    "💰",
     "🔒",
     "☁️",
-    "🗺️",
+    "💰",
   ];
 
   // Create an array of app icons with different properties, positioned only on left (0-25%) and right (75-100%) sides
@@ -43,10 +43,10 @@ const AnimatedBackground = ({ animate = true }) => {
     @keyframes floatUp {
       0% {
         transform: translateY(0) rotate(0deg) scale(1);
-        opacity: 0.8;
+        opacity: 0.5;
       }
       50% {
-        opacity: 1;
+        opacity: 0.8;
       }
       100% {
         transform: translateY(-1000px) rotate(360deg) scale(0.5);
@@ -82,7 +82,7 @@ const AnimatedBackground = ({ animate = true }) => {
                 fontSize: `${app.size * 0.6}px`,
               }}
             >
-              {app.icon}
+              {showIcons ? app.icon : ""}
             </div>
           ))}
         </div>

@@ -175,7 +175,7 @@ function Home() {
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden bg-gray-900 text-white">
       {/* Animated Background */}
-      <AnimatedBackground animate={isDesktop} />
+      <AnimatedBackground animate={isDesktop} showIcons={true} />
 
       {/* Device Info (dev only) */}
       <DeviceInfo />
