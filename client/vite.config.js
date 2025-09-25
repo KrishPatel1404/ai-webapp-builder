@@ -8,4 +8,15 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+  },
+  preview: {
+    port: 4173,
+    strictPort: true,
+  },
+  server: {
+    historyApiFallback: true,
+  },
 })
