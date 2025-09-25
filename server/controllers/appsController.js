@@ -65,11 +65,11 @@ const generateApp = async (req, res) => {
 
         // Create initial app record
         const app = new App({
-            name: requirement.extractedRequirements.appName || requirement.title,
-            description: requirement.prompt.substring(0, 500),
+            name: requirement.extractedRequirements?.appName || requirement.title || 'Generated App',
+            description: requirement.prompt ? requirement.prompt.substring(0, 500) : 'Generated from requirements',
             user: req.user._id,
             requirement: requirementId,
-            generatedCode: {},
+            generatedCode: { code: '' }, // Initialize with empty code structure
             status: 'generating'
         });
 
@@ -147,7 +147,7 @@ ENSURE TO ALWAYS STICK TO MATERIAL UI AND THE TEMPLATE GIVEN`;
             // Update requirement status to 'completed' since an app was successfully generated
             await updateRequirementStatus(requirementId, 'completed');
 
-            // Return success response
+            // Return success response with full app data (including generatedCode for single app responses)
             res.status(200).json({
                 success: true,
                 app: {
@@ -156,8 +156,13 @@ ENSURE TO ALWAYS STICK TO MATERIAL UI AND THE TEMPLATE GIVEN`;
                     description: app.description,
                     status: app.status,
                     generatedCode: app.generatedCode,
-                    metadata: app.metadata,
-                    createdAt: app.createdAt
+                    metadata: {
+                        processingTime: app.metadata.processingTime,
+                        tokensUsed: app.metadata.tokensUsed,
+                        apiVersion: app.metadata.apiVersion
+                    },
+                    createdAt: app.createdAt,
+                    updatedAt: app.updatedAt
                 },
                 message: 'App generated successfully'
             });
@@ -168,20 +173,53 @@ ENSURE TO ALWAYS STICK TO MATERIAL UI AND THE TEMPLATE GIVEN`;
             // Update app status to failed
             app.status = 'failed';
             app.errorMessage = openaiError.message || 'Failed to generate app';
+            app.metadata = {
+                processingTime: Date.now() - startTime,
+                tokensUsed: 0,
+                apiVersion: 'gpt-5',
+                generationPrompt
+            };
             await app.save();
 
             return res.status(500).json({
                 error: 'Failed to generate app',
                 details: openaiError.message,
-                appId: app._id
+                appId: app._id,
+                app: {
+                    id: app._id,
+                    name: app.name,
+                    description: app.description,
+                    status: app.status,
+                    errorMessage: app.errorMessage,
+                    createdAt: app.createdAt,
+                    updatedAt: app.updatedAt
+                }
             });
         }
 
     } catch (error) {
         console.error('Generate app error:', error);
+
+        // Try to update app status to failed if app was created
+        if (error.app && error.app._id) {
+            try {
+                await App.findByIdAndUpdate(error.app._id, {
+                    status: 'failed',
+                    errorMessage: error.message || 'Unexpected error during generation',
+                    metadata: {
+                        processingTime: Date.now() - startTime,
+                        tokensUsed: 0,
+                        apiVersion: 'gpt-5'
+                    }
+                });
+            } catch (updateError) {
+                console.error('Failed to update app status:', updateError);
+            }
+        }
+
         res.status(500).json({
             error: 'Failed to generate app',
-            details: error.message
+            details: error.message || 'An unexpected error occurred'
         });
     }
 };
@@ -192,7 +230,8 @@ ENSURE TO ALWAYS STICK TO MATERIAL UI AND THE TEMPLATE GIVEN`;
 const getUserApps = async (req, res) => {
     try {
         const apps = await App.find({ user: req.user._id })
-            .populate('requirement', 'title prompt extractedRequirements')
+            .select('-generatedCode -metadata.generationPrompt') // Exclude generated code and large prompt text
+            .populate('requirement', 'title extractedRequirements.appName')
             .sort({ createdAt: -1 });
 
         res.status(200).json({
@@ -204,6 +243,12 @@ const getUserApps = async (req, res) => {
                 description: app.description,
                 status: app.status,
                 requirement: app.requirement,
+                errorMessage: app.errorMessage,
+                metadata: app.metadata ? {
+                    processingTime: app.metadata.processingTime,
+                    tokensUsed: app.metadata.tokensUsed,
+                    apiVersion: app.metadata.apiVersion
+                } : null,
                 createdAt: app.createdAt,
                 updatedAt: app.updatedAt
             }))
@@ -233,6 +278,7 @@ const getAppById = async (req, res) => {
             });
         }
 
+        // For individual app requests, include the full generatedCode
         res.status(200).json({
             success: true,
             app: {
@@ -242,7 +288,13 @@ const getAppById = async (req, res) => {
                 status: app.status,
                 generatedCode: app.generatedCode,
                 requirement: app.requirement,
-                metadata: app.metadata,
+                metadata: app.metadata ? {
+                    processingTime: app.metadata.processingTime,
+                    tokensUsed: app.metadata.tokensUsed,
+                    apiVersion: app.metadata.apiVersion,
+                    // Include generationPrompt only for individual app requests if needed for debugging
+                    ...(process.env.NODE_ENV !== 'production' && { generationPrompt: app.metadata.generationPrompt })
+                } : null,
                 errorMessage: app.errorMessage,
                 createdAt: app.createdAt,
                 updatedAt: app.updatedAt
@@ -273,11 +325,19 @@ const deleteApp = async (req, res) => {
             });
         }
 
+        // Store app info before deletion for response
+        const deletedAppInfo = {
+            id: app._id,
+            name: app.name,
+            status: app.status
+        };
+
         await App.findByIdAndDelete(req.params.id);
 
         res.status(200).json({
             success: true,
-            message: 'App deleted successfully'
+            message: 'App deleted successfully',
+            deletedApp: deletedAppInfo
         });
     } catch (error) {
         console.error('Delete app error:', error);
@@ -310,7 +370,9 @@ const getAppsByRequirement = async (req, res) => {
         const apps = await App.find({
             requirement: requirementId,
             user: req.user._id
-        }).sort({ createdAt: -1 });
+        })
+            .select('-generatedCode -metadata.generationPrompt') // Exclude generated code and large prompt text
+            .sort({ createdAt: -1 });
 
         res.status(200).json({
             success: true,
@@ -321,6 +383,12 @@ const getAppsByRequirement = async (req, res) => {
                 name: app.name,
                 description: app.description,
                 status: app.status,
+                errorMessage: app.errorMessage,
+                metadata: app.metadata ? {
+                    processingTime: app.metadata.processingTime,
+                    tokensUsed: app.metadata.tokensUsed,
+                    apiVersion: app.metadata.apiVersion
+                } : null,
                 createdAt: app.createdAt,
                 updatedAt: app.updatedAt
             }))
