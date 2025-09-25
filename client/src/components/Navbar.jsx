@@ -39,7 +39,7 @@ function Navbar() {
         className={`flex items-center transition-all duration-200 ${
           isMobile
             ? `${
-                isRetina ? "text-xl py-4 px-5" : "text-lg py-3 px-4"
+                isRetina ? "text-lg py-3 px-4" : "text-base py-2 px-3"
               } text-gray-200 hover:text-blue-400 rounded-lg hover:bg-gray-700 ${
                 touchCapable ? "touch-target" : ""
               }`
@@ -47,8 +47,8 @@ function Navbar() {
         }`}
       >
         <IconComponent
-          className={isMobile ? "mr-3" : "mr-1"}
-          size={isMobile ? (isRetina ? 22 : 20) : 16}
+          className={isMobile ? "mr-2" : "mr-1"}
+          size={isMobile ? (isRetina ? 20 : 18) : 16}
         />
         {children}
       </Link>
@@ -63,7 +63,7 @@ function Navbar() {
         className={`flex items-center transition-all duration-200 ${
           isMobile
             ? `${
-                isRetina ? "text-xl py-4 px-5" : "text-lg py-3 px-4"
+                isRetina ? "text-lg py-3 px-4" : "text-base py-2 px-3"
               } text-gray-200 hover:text-blue-400 rounded-lg hover:bg-gray-700 w-full text-left ${
                 touchCapable ? "touch-target" : ""
               }`
@@ -71,8 +71,8 @@ function Navbar() {
         }`}
       >
         <IconComponent
-          className={isMobile ? "mr-3" : "mr-1"}
-          size={isMobile ? (isRetina ? 22 : 20) : 16}
+          className={isMobile ? "mr-2" : "mr-1"}
+          size={isMobile ? (isRetina ? 20 : 18) : 16}
         />
         {children}
       </button>
@@ -88,7 +88,7 @@ function Navbar() {
             src={logo}
             alt="Logo"
             className={`${
-              isMobile ? (isRetina ? "h-8" : "h-6") : "h-8"
+              isMobile ? (isRetina ? "h-7" : "h-6") : "h-8"
             } hover:scale-105 transition-transform duration-200`}
           />
           <span className="sr-only">Home</span>
@@ -153,11 +153,11 @@ function Navbar() {
       {isMobile && (
         <div
           className={`transition-all duration-300 ease-in-out overflow-hidden ${
-            isMobileMenuOpen ? "max-h-96 opacity-100 mt-4" : "max-h-0 opacity-0"
+            isMobileMenuOpen ? "max-h-80 opacity-100 mt-3" : "max-h-0 opacity-0"
           }`}
         >
           <div className="bg-gray-700 rounded-lg shadow-lg">
-            <div className="flex flex-col space-y-1 p-2">
+            <div className="flex flex-col space-y-0.5 p-1.5">
               <NavLink to="/" icon={FiHome}>
                 Home
               </NavLink>
