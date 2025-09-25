@@ -336,7 +336,7 @@ function Requirements() {
       if (response.ok) {
         const data = await response.json();
         setSuccessMessage(
-          `App "${data.app.name}" generated successfully! Redirecting to Previews...`
+          `App "${data.app.name}" generated successfully! Redirecting to Applications...`
         );
 
         // Update the requirement in the local state to reflect completion

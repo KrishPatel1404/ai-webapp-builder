@@ -135,7 +135,7 @@ export default function Preview() {
         <div className="container mx-auto px-6 py-8">
           <div className="max-w-4xl mx-auto">
             <Link
-              to="/previews"
+              to="/apps"
               className="inline-flex items-center text-blue-400 hover:text-blue-300 mb-6"
             >
               <FiArrowLeft className="mr-2" />
@@ -151,7 +151,7 @@ export default function Preview() {
                 have access to it.
               </p>
               <Link
-                to="/previews"
+                to="/apps"
                 className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200"
               >
                 View All Apps
@@ -175,7 +175,7 @@ export default function Preview() {
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <Link
-              to="/previews"
+              to="/apps"
               className="inline-flex items-center text-blue-400 hover:text-blue-300"
             >
               <FiArrowLeft className="mr-2" />
