@@ -345,7 +345,7 @@ function Home() {
       {/* Footer Section */}
       <div
         className={`${
-          isMobile ? "pt-8 pb-4" : "pt-12 pb-4"
+          isMobile ? "pt-8 pb-4 transform -translate-y-16" : "pt-12 pb-4"
         } text-center relative bg-gradient-to-b from-transparent to-gray-900`}
       >
         <div
