@@ -12,7 +12,7 @@ import {
   FiChevronUp,
   FiCheck,
 } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
 import AnimatedBackground from "./components/AnimatedBackground";
@@ -330,12 +330,6 @@ function Apps() {
     setIsCodeExpanded(!isCodeExpanded);
   };
 
-  const viewApp = (appId) => {
-    // Open preview in a new tab
-    const previewUrl = `${window.location.origin}/preview/${appId}`;
-    window.open(previewUrl, "_blank");
-  };
-
   if (loading || loadingApps) {
     return (
       <div className="min-h-screen flex flex-col relative overflow-hidden bg-gray-900 text-white">
@@ -577,12 +571,14 @@ function Apps() {
                         </div>
                         <div className="flex space-x-2">
                           {selectedApp.status === "completed" && (
-                            <button
-                              onClick={() => viewApp(selectedApp._id)}
+                            <Link
+                              to={`/preview/${selectedApp._id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
                               className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center"
                             >
                               <FiExternalLink className="mr-2" /> View
-                            </button>
+                            </Link>
                           )}
                           <button
                             onClick={closeModal}
