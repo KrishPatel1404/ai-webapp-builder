@@ -64,6 +64,29 @@ function Requirements() {
     }
   }, [requirements, searchParams, showModal, setSearchParams]);
 
+  // Handle Escape key to close modals
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        if (showModal) {
+          closeModal();
+        } else if (deleteConfirm) {
+          setDeleteConfirm(null);
+        }
+      }
+    };
+
+    // Add event listener when any modal is open
+    if (showModal || deleteConfirm) {
+      document.addEventListener("keydown", handleKeyDown);
+    }
+
+    // Cleanup event listener
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showModal, deleteConfirm]);
+
   const fetchRequirements = async () => {
     try {
       setLoadingRequirements(true);
