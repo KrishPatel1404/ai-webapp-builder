@@ -77,6 +77,7 @@ function Apps() {
         appName: app.name,
         description: app.description || "No description provided",
         status: app.status,
+        colorCode: app.colorCode,
         createdAt: app.createdAt,
         requirementId: app.requirement?._id,
         requirementTitle: app.requirement?.title,
@@ -246,6 +247,7 @@ function Apps() {
         appName: app.name,
         description: app.description,
         status: app.status,
+        colorCode: app.colorCode,
         createdAt: app.createdAt,
         generatedCode: app.generatedCode?.code || "No code available.",
         requirement: app.requirement,
@@ -438,20 +440,22 @@ function Apps() {
                 >
                   <div className="p-4">
                     <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-white mb-1">
-                          {app.appName}
-                        </h3>
-                        {app.status != "failed" && (
-                          <p className="text-sm text-gray-400 mb-3 line-clamp-2">
-                            {app.description}
-                          </p>
-                        )}
-                        {app.status === "failed" && (
-                          <div className="text-xs border-red-400 bg-red-800/30 px-2 py-1 rounded-md mb-3">
-                            Generation failed - Cannot access preview
-                          </div>
-                        )}
+                      <div className="flex-1 flex items-start space-x-3">
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold text-white mb-1">
+                            {app.appName}
+                          </h3>
+                          {app.status != "failed" && (
+                            <p className="text-sm text-gray-400 mb-3 line-clamp-2">
+                              {app.description}
+                            </p>
+                          )}
+                          {app.status === "failed" && (
+                            <div className="text-xs border-red-400 bg-red-800/30 px-2 py-1 rounded-md mb-3">
+                              Generation failed - Cannot access preview
+                            </div>
+                          )}
+                        </div>
                       </div>
                       <div className="flex space-x-2">
                         <button
@@ -601,15 +605,31 @@ function Apps() {
 
                       {/* Success and Error Messages */}
                       {successMessage && (
-                        <div className="mb-4 bg-green-900/50 border border-green-500 text-green-200 px-4 py-3 rounded-lg">
+                        <div className="mb-3 bg-green-900/50 border border-green-500 text-green-200 px-4 py-3 rounded-lg">
                           {successMessage}
                         </div>
                       )}
                       {error && (
-                        <div className="mb-4 bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded-lg">
+                        <div className="mb-3 bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded-lg">
                           {error}
                         </div>
                       )}
+
+                      {/* Color Code */}
+                      <div className="mb-3">
+                        <label className="flex items-center align-middle space-x-1 text-lg font-semibold text-white">
+                          Color Theme -
+                          <div
+                            className="w-5 h-5 rounded border border-gray-600 ml-2"
+                            style={{
+                              backgroundColor: selectedApp.colorCode,
+                            }}
+                          ></div>
+                          <span className="text-gray-300 font-mono text-sm">
+                            {selectedApp.colorCode}
+                          </span>
+                        </label>
+                      </div>
 
                       {/* Code */}
                       <div className="mb-6">

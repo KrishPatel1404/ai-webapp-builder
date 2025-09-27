@@ -843,6 +843,50 @@ function Requirements() {
 
                   {selectedRequirement.extractedRequirements && (
                     <div className="space-y-6">
+                      {/* Color Code */}
+                      <div className="mb-3">
+                        <label className="flex items-center align-middle space-x-1 text-lg font-semibold text-white">
+                          Color Theme -
+                          <div
+                            className="w-5 h-5 rounded border border-gray-600 ml-2"
+                            style={{
+                              backgroundColor:
+                                selectedRequirement.colorCode || "#1976d2",
+                            }}
+                          ></div>
+                          <span className="text-gray-300 font-mono text-sm">
+                            {selectedRequirement.colorCode || "#1976d2"}
+                          </span>
+                        </label>
+                        {isEditing && (
+                          <div className="mt-2 flex items-center space-x-3">
+                            <input
+                              type="color"
+                              value={editForm.colorCode}
+                              onChange={(e) =>
+                                setEditForm((prev) => ({
+                                  ...prev,
+                                  colorCode: e.target.value,
+                                }))
+                              }
+                              className="w-12 h-10 border border-gray-600 rounded-lg cursor-pointer"
+                            />
+                            <input
+                              type="text"
+                              value={editForm.colorCode}
+                              onChange={(e) =>
+                                setEditForm((prev) => ({
+                                  ...prev,
+                                  colorCode: e.target.value,
+                                }))
+                              }
+                              pattern="^#[0-9A-Fa-f]{6}$"
+                              placeholder="#1976d2"
+                              className="px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-300 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono"
+                            />
+                          </div>
+                        )}
+                      </div>
                       {/* Original Prompt */}
                       <div>
                         <label className="block text-lg font-semibold text-white mb-3">
@@ -869,57 +913,6 @@ function Requirements() {
                           </div>
                         )}
                       </div>
-
-                      {/* Color Code */}
-                      <div>
-                        <label className="block text-lg font-semibold text-white mb-3">
-                          Primary Color Code
-                        </label>
-                        {isEditing ? (
-                          <div className="flex items-center space-x-3">
-                            <input
-                              type="color"
-                              value={editForm.colorCode}
-                              onChange={(e) =>
-                                setEditForm((prev) => ({
-                                  ...prev,
-                                  colorCode: e.target.value,
-                                }))
-                              }
-                              className="w-12 h-10 border border-gray-600 rounded-lg cursor-pointer"
-                            />
-                            <input
-                              type="text"
-                              value={editForm.colorCode}
-                              onChange={(e) =>
-                                setEditForm((prev) => ({
-                                  ...prev,
-                                  colorCode: e.target.value,
-                                }))
-                              }
-                              pattern="^#[0-9A-Fa-f]{6}$"
-                              placeholder="#1976d2"
-                              className="px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-300 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono"
-                            />
-                          </div>
-                        ) : (
-                          <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
-                            <div className="flex items-center space-x-3">
-                              <div
-                                className="w-8 h-8 rounded border border-gray-600"
-                                style={{
-                                  backgroundColor:
-                                    selectedRequirement.colorCode || "#1976d2",
-                                }}
-                              ></div>
-                              <span className="text-gray-300 font-mono">
-                                {selectedRequirement.colorCode || "#1976d2"}
-                              </span>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
                       {/* Entities */}
                       <div>
                         <label className="block text-lg font-semibold text-white mb-3">
@@ -985,7 +978,6 @@ function Requirements() {
                           </div>
                         )}
                       </div>
-
                       {/* Roles */}
                       <div>
                         <label className="block text-lg font-semibold text-white mb-3">
@@ -1051,7 +1043,6 @@ function Requirements() {
                           </div>
                         )}
                       </div>
-
                       {/* Features */}
                       <div>
                         <label className="block text-lg font-semibold text-white mb-3">
@@ -1218,7 +1209,6 @@ function Requirements() {
                           </div>
                         )}
                       </div>
-
                       {/* Technical Requirements */}
                       <div>
                         <label className="block text-lg font-semibold text-white mb-3">
@@ -1316,7 +1306,6 @@ function Requirements() {
                           </div>
                         )}
                       </div>
-
                       {/* Business Rules */}
                       <div>
                         <label className="block text-lg font-semibold text-white mb-3">
