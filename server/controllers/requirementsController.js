@@ -329,7 +329,7 @@ const deleteRequirement = async (req, res) => {
 // @access  Private
 const updateRequirement = async (req, res) => {
     try {
-        const { title, prompt, extractedRequirements } = req.body;
+        const { title, prompt, extractedRequirements, colorCode } = req.body;
 
         // Find the requirement and ensure it belongs to the authenticated user
         const requirement = await Requirement.findOne({
@@ -371,6 +371,16 @@ const updateRequirement = async (req, res) => {
                 success: false,
                 message: 'Title cannot be more than 150 characters'
             });
+        }
+
+        // Validate colorCode if provided
+        if (colorCode !== undefined) {
+            if (typeof colorCode !== 'string' || !/^#[0-9A-Fa-f]{6}$/.test(colorCode)) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Color code must be a valid hex color (e.g., #1976d2)'
+                });
+            }
         }
 
         // Validate extractedRequirements structure if provided
@@ -420,6 +430,7 @@ const updateRequirement = async (req, res) => {
         if (title !== undefined) updateData.title = title.trim();
         if (prompt !== undefined) updateData.prompt = prompt.trim();
         if (extractedRequirements !== undefined) updateData.extractedRequirements = extractedRequirements;
+        if (colorCode !== undefined) updateData.colorCode = colorCode;
 
         // Update the updatedAt timestamp
         updateData.updatedAt = new Date();
