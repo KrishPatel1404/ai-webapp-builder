@@ -18,6 +18,17 @@ const requirementSchema = new mongoose.Schema({
             return `Requirements - ${new Date().toLocaleDateString()}`;
         }
     },
+    // Color code for the requirement (hex color)
+    colorCode: {
+        type: String,
+        default: '#1976d2',
+        validate: {
+            validator: function (v) {
+                return /^#[0-9A-Fa-f]{6}$/.test(v);
+            },
+            message: 'Color code must be a valid hex color (e.g., #1976d2)'
+        }
+    },
     // The extracted structured requirements as JSON
     extractedRequirements: {
         type: mongoose.Schema.Types.Mixed,

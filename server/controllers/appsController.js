@@ -11,7 +11,7 @@ const openai = new OpenAI({
 // System prompt for app generation
 const SYSTEM_PROMPT = `
 Template:
-const { AppBar, Toolbar, Typography, Tabs, Tab, Box, Container } = MaterialUI; 
+const { AppBar, Toolbar, Typography, Tabs, Tab, Box, Container, Button, Card, CardContent } = MaterialUI; 
 const { useState } = React;
 
 function DemoApp() {
@@ -69,6 +69,7 @@ const generateApp = async (req, res) => {
             description: requirement.prompt ? requirement.prompt.substring(0, 500) : 'Generated from requirements',
             user: req.user._id,
             requirement: requirementId,
+            colorCode: requirement.colorCode, // Inherit color from requirement
             generatedCode: { code: '' }, // Initialize with empty code structure
             status: 'generating'
         });
@@ -80,6 +81,9 @@ const generateApp = async (req, res) => {
 Based on this and this requirement list:
 
 ${JSON.stringify(requirement.extractedRequirements, null, 2)}
+
+Theme Color: ${requirement.colorCode}
+Use this color as the primary theme color throughout the application. Apply it to AppBars, primary buttons, active states, and other key UI elements. You can create variations of this color (lighter/darker shades) for hover states and secondary elements.
 
 Using simple code and checking it over. Use MaterialUI components to make a mock web-app from the template given. And ensure more than basic functionality. Do your best to include advanced lists, checkboxes, saving data and anything advanced where possible. Think about what features would be requirements even if not directly in the requirements list.
 
@@ -155,6 +159,7 @@ ENSURE TO ALWAYS STICK TO MATERIAL UI AND THE TEMPLATE GIVEN. DO NOT USE ANY OTH
                     name: app.name,
                     description: app.description,
                     status: app.status,
+                    colorCode: app.colorCode,
                     generatedCode: app.generatedCode,
                     metadata: {
                         processingTime: app.metadata.processingTime,
@@ -231,7 +236,7 @@ const getUserApps = async (req, res) => {
     try {
         const apps = await App.find({ user: req.user._id })
             .select('-generatedCode -metadata.generationPrompt') // Exclude generated code and large prompt text
-            .populate('requirement', 'title extractedRequirements.appName')
+            .populate('requirement', 'title extractedRequirements.appName colorCode')
             .sort({ createdAt: -1 });
 
         res.status(200).json({
@@ -242,6 +247,7 @@ const getUserApps = async (req, res) => {
                 name: app.name,
                 description: app.description,
                 status: app.status,
+                colorCode: app.colorCode,
                 requirement: app.requirement,
                 errorMessage: app.errorMessage,
                 metadata: app.metadata ? {
@@ -270,7 +276,7 @@ const getAppById = async (req, res) => {
         const app = await App.findOne({
             _id: req.params.id,
             user: req.user._id
-        }).populate('requirement', 'title prompt extractedRequirements');
+        }).populate('requirement', 'title prompt extractedRequirements colorCode');
 
         if (!app) {
             return res.status(404).json({
@@ -286,6 +292,7 @@ const getAppById = async (req, res) => {
                 name: app.name,
                 description: app.description,
                 status: app.status,
+                colorCode: app.colorCode,
                 generatedCode: app.generatedCode,
                 requirement: app.requirement,
                 metadata: app.metadata ? {

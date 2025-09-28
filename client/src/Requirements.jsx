@@ -35,6 +35,7 @@ function Requirements() {
     features: [],
     technicalRequirements: [],
     businessRules: [],
+    colorCode: "#1976d2",
   });
 
   // Redirect to login if not authenticated
@@ -62,6 +63,29 @@ function Requirements() {
       setSearchParams({});
     }
   }, [requirements, searchParams, showModal, setSearchParams]);
+
+  // Handle Escape key to close modals
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        if (showModal) {
+          closeModal();
+        } else if (deleteConfirm) {
+          setDeleteConfirm(null);
+        }
+      }
+    };
+
+    // Add event listener when any modal is open
+    if (showModal || deleteConfirm) {
+      document.addEventListener("keydown", handleKeyDown);
+    }
+
+    // Cleanup event listener
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showModal, deleteConfirm]);
 
   const fetchRequirements = async () => {
     try {
@@ -169,6 +193,7 @@ function Requirements() {
       technicalRequirements:
         requirement.extractedRequirements?.technicalRequirements || [],
       businessRules: requirement.extractedRequirements?.businessRules || [],
+      colorCode: requirement.colorCode || "#1976d2",
     });
     setIsEditing(false);
     setError(""); // Clear any error messages
@@ -202,6 +227,10 @@ function Requirements() {
       setError("App name cannot be more than 150 characters");
       return false;
     }
+    if (editForm.colorCode && !/^#[0-9A-Fa-f]{6}$/.test(editForm.colorCode)) {
+      setError("Color code must be a valid hex color (e.g., #1976d2)");
+      return false;
+    }
     return true;
   };
 
@@ -225,6 +254,7 @@ function Requirements() {
           body: JSON.stringify({
             title: editForm.appName,
             prompt: editForm.prompt,
+            colorCode: editForm.colorCode,
             extractedRequirements: {
               appName: editForm.appName,
               entities: editForm.entities,
@@ -512,16 +542,24 @@ function Requirements() {
                   } transition-colors duration-200 cursor-pointer`}
                 >
                   <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h3
-                        className={`${
-                          isMobile ? "text-base" : "text-lg"
-                        } font-semibold text-white mb-1`}
-                      >
-                        {requirement.extractedRequirements?.appName ||
-                          requirement.title ||
-                          "Untitled"}
-                      </h3>
+                    <div className="flex-1 flex items-start space-x-3">
+                      <div
+                        className="w-4 h-4 rounded-full border border-gray-600 flex-shrink-0 mt-1"
+                        style={{
+                          backgroundColor: requirement.colorCode || "#1976d2",
+                        }}
+                      ></div>
+                      <div className="flex-1">
+                        <h3
+                          className={`${
+                            isMobile ? "text-base" : "text-lg"
+                          } font-semibold text-white mb-1`}
+                        >
+                          {requirement.extractedRequirements?.appName ||
+                            requirement.title ||
+                            "Untitled"}
+                        </h3>
+                      </div>
                     </div>
                     <div className="flex space-x-2">
                       <button
@@ -805,6 +843,50 @@ function Requirements() {
 
                   {selectedRequirement.extractedRequirements && (
                     <div className="space-y-6">
+                      {/* Color Code */}
+                      <div className="mb-3">
+                        <label className="flex items-center align-middle space-x-1 text-lg font-semibold text-white">
+                          Color Theme -
+                          <div
+                            className="w-5 h-5 rounded border border-gray-600 ml-2"
+                            style={{
+                              backgroundColor:
+                                selectedRequirement.colorCode || "#1976d2",
+                            }}
+                          ></div>
+                          <span className="text-gray-300 font-mono text-sm">
+                            {selectedRequirement.colorCode || "#1976d2"}
+                          </span>
+                        </label>
+                        {isEditing && (
+                          <div className="mt-2 flex items-center space-x-3">
+                            <input
+                              type="color"
+                              value={editForm.colorCode}
+                              onChange={(e) =>
+                                setEditForm((prev) => ({
+                                  ...prev,
+                                  colorCode: e.target.value,
+                                }))
+                              }
+                              className="w-12 h-10 border border-gray-600 rounded-lg cursor-pointer"
+                            />
+                            <input
+                              type="text"
+                              value={editForm.colorCode}
+                              onChange={(e) =>
+                                setEditForm((prev) => ({
+                                  ...prev,
+                                  colorCode: e.target.value,
+                                }))
+                              }
+                              pattern="^#[0-9A-Fa-f]{6}$"
+                              placeholder="#1976d2"
+                              className="px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-300 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono"
+                            />
+                          </div>
+                        )}
+                      </div>
                       {/* Original Prompt */}
                       <div>
                         <label className="block text-lg font-semibold text-white mb-3">
@@ -831,7 +913,6 @@ function Requirements() {
                           </div>
                         )}
                       </div>
-
                       {/* Entities */}
                       <div>
                         <label className="block text-lg font-semibold text-white mb-3">
@@ -897,7 +978,6 @@ function Requirements() {
                           </div>
                         )}
                       </div>
-
                       {/* Roles */}
                       <div>
                         <label className="block text-lg font-semibold text-white mb-3">
@@ -963,7 +1043,6 @@ function Requirements() {
                           </div>
                         )}
                       </div>
-
                       {/* Features */}
                       <div>
                         <label className="block text-lg font-semibold text-white mb-3">
@@ -1130,7 +1209,6 @@ function Requirements() {
                           </div>
                         )}
                       </div>
-
                       {/* Technical Requirements */}
                       <div>
                         <label className="block text-lg font-semibold text-white mb-3">
@@ -1228,7 +1306,6 @@ function Requirements() {
                           </div>
                         )}
                       </div>
-
                       {/* Business Rules */}
                       <div>
                         <label className="block text-lg font-semibold text-white mb-3">
