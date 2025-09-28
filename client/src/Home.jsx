@@ -5,7 +5,7 @@ import {
   FiGithub,
   FiLinkedin,
   FiLoader,
-  FiLink,
+  FiMail,
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
@@ -84,6 +84,7 @@ function Home() {
   const [searchText, setSearchText] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showEmailLabel, setShowEmailLabel] = useState(false);
   const { isAuthenticated } = useAuth();
   const { isMobile, isTablet, isDesktop, isHighDPI, isRetina, touchCapable } =
     useResponsive();
@@ -399,6 +400,21 @@ function Home() {
                 className="text-white hover:text-blue-400 hover:scale-110 hover:-translate-y-1 cursor-pointer transition"
               />
             </a>
+            <div className="relative">
+              <FiMail
+                size={isMobile ? 20 : 24}
+                className="text-white hover:text-blue-400 hover:scale-110 hover:-translate-y-1 cursor-pointer transition"
+                onClick={() => setShowEmailLabel(!showEmailLabel)}
+              />
+              {showEmailLabel && (
+                <a
+                  href="mailto:krishpatel04@yahoo.com"
+                  className="absolute left-full ml-2 top-0 bg-gray-800 text-white px-2 py-1 rounded text-sm whitespace-nowrap"
+                >
+                  krishpatel04@yahoo.com
+                </a>
+              )}
+            </div>
           </div>
         </div>
       </div>
