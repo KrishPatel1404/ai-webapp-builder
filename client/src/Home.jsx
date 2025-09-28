@@ -227,14 +227,6 @@ function Home() {
           Create • Connect • Inspire
         </h2>
 
-        <div
-          className={`flex flex-col items-center gap-2 text-gray-400 ${
-            isMobile ? "mb-6 text-sm" : "mb-10 text-base"
-          }`}
-        >
-          Lorem ipsum dolor sit amet consectetur adipiscing elit.
-        </div>
-
         {/* Input box */}
         <div
           className={`w-full ${
@@ -243,11 +235,7 @@ function Home() {
         >
           <textarea
             rows={isMobile ? (isRetina ? 2 : 2) : 1}
-            placeholder={
-              isMobile
-                ? "Describe the website..."
-                : "Describe the website you want..."
-            }
+            placeholder={"Describe an app you want to build..."}
             className={`w-full ${
               isMobile
                 ? `${isRetina ? "py-4 px-5 pr-12" : "py-3 px-4 pr-10"} ${
@@ -334,12 +322,12 @@ function Home() {
         {/* Text below - moves down when error appears */}
         <p
           className={`text-gray-400 text-center transition-all duration-200 ${
-            isMobile ? "max-w-xs text-sm" : "max-w-md"
+            isMobile ? "max-w-sm text-sm" : "max-w-2xl"
           } ${error ? "mt-4 mb-6" : "mt-2 mb-6"}`}
         >
-          Lorem ipsum dolor sit amet consectetur adipiscing elit.{" "}
-          {!isMobile &&
-            "Dolor sit amet consectetur adipiscing elit quisque faucibus."}
+          Describe your idea, and let our AI capture the requirements for you.
+          <br />
+          Include key features, user roles, and any specific details.
         </p>
       </div>
 
@@ -361,9 +349,7 @@ function Home() {
               isMobile ? "text-sm" : "text-lg md:text-xl"
             } font-bold text-white ${isMobile ? "text-center" : ""}`}
           >
-            {isMobile
-              ? "100+ Lorem • 2000+ Lorem"
-              : "100+ Lorem Ipsum Dolor • 2000+ Lorem Ipsum"}
+            100+ Ideas Captured • 200+ Mock UIs Generated
           </h1>
           <div
             className={`flex justify-center ${
@@ -409,7 +395,7 @@ function Home() {
               {showEmailLabel && (
                 <a
                   href="mailto:krishpatel04@yahoo.com"
-                  className="absolute left-full ml-2 top-0 bg-gray-800 text-white px-2 py-1 rounded text-sm whitespace-nowrap"
+                  className="absolute -right-3 bottom-10 bg-gray-800 text-white px-2 py-1 rounded text-sm whitespace-nowrap"
                 >
                   krishpatel04@yahoo.com
                 </a>
@@ -418,6 +404,13 @@ function Home() {
           </div>
         </div>
       </div>
+
+      {/* Made by Krish Patel */}
+      {isDesktop && (
+        <div className="absolute bottom-2 left-2 text-gray-400/40 text-xs">
+          Made by Krish Patel
+        </div>
+      )}
     </div>
   );
 }
