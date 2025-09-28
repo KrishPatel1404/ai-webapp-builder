@@ -41,7 +41,7 @@ function About() {
                   touchCapable ? "active:scale-95" : "hover:scale-105"
                 } transition-all duration-200 inline-block`}
               >
-                Me
+                This App
               </span>
             </h1>
             <p
@@ -53,7 +53,7 @@ function About() {
                   : "text-xl max-w-2xl"
               } mx-auto`}
             >
-              Ullamco cillum id quis enim enim aliquip ut.
+              Turning ideas into fast, simple, and inspiring apps.
             </p>
           </div>
 
@@ -79,15 +79,15 @@ function About() {
                   isMobile ? "text-lg" : "text-xl"
                 } font-semibold text-white mb-3`}
               >
-                Point 1
+                Describe An Idea
               </h3>
               <p
                 className={`text-gray-400 ${
                   isMobile ? "text-sm" : "text-base"
                 }`}
               >
-                Mollit duis magna duis reprehenderit elit sit. Laborum nulla
-                aliquip commodo dolor mollit. Exercitation et qui nostrud minim.
+                Start with a simple description about the app you want to create
+                and any ideas or features you have in mind.
               </p>
             </div>
 
@@ -107,15 +107,15 @@ function About() {
                   isMobile ? "text-lg" : "text-xl"
                 } font-semibold text-white mb-3`}
               >
-                Point 2
+                Capture Requirements
               </h3>
               <p
                 className={`text-gray-400 ${
                   isMobile ? "text-sm" : "text-base"
                 }`}
               >
-                Dolor mollit tempor amet reprehenderit eiusmod ipsum enim aute
-                voluptate ea anim. Commodo occaecat cillum ut elit do. Proident
+                An AI will break down your description into requirements,
+                features, and roles. Which you can then edit and refine.
               </p>
             </div>
 
@@ -135,15 +135,15 @@ function About() {
                   isMobile ? "text-lg" : "text-xl"
                 } font-semibold text-white mb-3`}
               >
-                Point 3
+                Instant Mock-UI
               </h3>
               <p
                 className={`text-gray-400 ${
                   isMobile ? "text-sm" : "text-base"
                 }`}
               >
-                Dolore culpa quis veniam eiusmod elit tempor fugiat eu duis
-                cillum culpa sint laboris dolore. Tempor excepteur nulla non
+                See your idea come to life with automatically generated forms,
+                menus, and role-based views in a AI generated mockup.
               </p>
             </div>
           </div>
@@ -172,17 +172,36 @@ function About() {
                 isMobile ? "text-base" : "text-lg"
               } text-gray-300 leading-relaxed mb-3`}
             >
-              Deserunt veniam non pariatur minim pariatur eiusmod consectetur
-              reprehenderit. Consequat elit quis eu nulla culpa laborum. Aute
-              non qui mollit ut aliqua laboris consequat esse. Ex reprehenderit
+              I've always been fascinated by how ideas can turn into real
+              applications. But I noticed that many students, creators and even
+              developers often get stuck at the very first step
+            </p>
+            <p
+              className={`${
+                isMobile ? "text-base" : "text-lg"
+              } text-blue-200 leading-relaxed mb-3`}
+            >
+              Translating an idea into a structured app design!
+            </p>
+            <p
+              className={`${
+                isMobile ? "text-base" : "text-lg"
+              } text-gray-300 leading-relaxed mb-3`}
+            >
+              That's why I created this project. It combines my interest in AI
+              and software development with a mission: make prototyping
+              effortless. Instead of spending hours coding the basics, you can
+              focus on what really matters the idea itself and see your vision
+              as a mockup.
             </p>
             <p
               className={`${
                 isMobile ? "text-base" : "text-lg"
               } text-gray-300 leading-relaxed`}
             >
-              Cillum laboris occaecat exercitation officia nostrud adipisicing
-              laborum ad tempor pariatur labore.
+              This project and my journey has been about learning how to merge
+              AI with development tools, and about building something that makes
+              the creative process more accessible to everyone.
             </p>
           </div>
         </div>
