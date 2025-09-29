@@ -1,4 +1,6 @@
 const OpenAI = require('openai');
+const { zodTextFormat } = require('openai/helpers/zod');
+const { z } = require('zod');
 const Requirement = require('../models/Requirement');
 
 // Initialize OpenAI client
@@ -9,35 +11,29 @@ const openai = new OpenAI({
 // System prompt for requirement extraction
 const SYSTEM_PROMPT = `
 You are an expert business analyst specialized in extracting structured software requirements from natural language descriptions.
-
-Your job: analyze the input text and return ONLY a valid JSON object with this structure, filling any details you can infer from the text. If a field has no information, use an empty string, empty array, or empty object as appropriate. Do NOT add any extra commentary or text outside the JSON.:
-
-{
-  "appName": "string - the name/title of the application or system (short and clear)",
-  "entities": ["string array - main data objects/entities mentioned (e.g. Student, Course or Product, Order or User, Admin or etc.)"],
-  "roles": ["string array - user roles/types mentioned (e.g. User, Admin, Guest, or Student, Teacher... etc.)"],
-  "features": [
-    {
-      "title": "string - short feature name",
-      "description": "string - detailed but concise description of the feature",
-      "category": "string - functional category (CRUD, Reporting, Authentication, etc.)",
-      "userRole": "string - role most associated with this feature",
-      "hint": "string - any additional context or notes about on how to implement or consider this feature"
-    }
-  ],
-  "technicalRequirements": ["string array - any technology constraints (make sure to add technical requirements even if not explicitly stated)"],
-  "businessRules": ["string array - any explicit or implied rules (e.g. 'Students must enrol before receiving grades')"]
-}
-
+Your job: analyze the input text and fill any details you can infer from the text.
 Rules:
 - Extract ONLY what is explicitly stated or reasonably implied in the text.
 - Do not invent requirements that are not supported by the input.
-- If a field has no information, use an empty string, empty array, or empty object as appropriate.
-- Always output valid JSON, with double quotes for keys and string values.
 - Be specific and actionable in feature descriptions.
 - Keep names concise and consistent, but meaningful and use spaces between words.
-- Do not add any extra commentary or text outside the JSON.
 `;
+
+// Zod schema for structured requirements
+const RequirementSchema = z.object({
+    appName: z.string(),
+    entities: z.array(z.string()),
+    roles: z.array(z.string()),
+    features: z.array(z.object({
+        title: z.string(),
+        description: z.string(),
+        category: z.string(),
+        userRole: z.string(),
+        hint: z.string()
+    })),
+    technicalRequirements: z.array(z.string()),
+    businessRules: z.array(z.string())
+});
 
 // @desc    Extract requirements from natural language text
 // @route   POST /api/requirements
@@ -45,6 +41,7 @@ Rules:
 const extractRequirements = async (req, res) => {
     const startTime = Date.now();
     let requirement = null;
+    let requirementId = null;
 
     try {
         const { text } = req.body;
@@ -77,44 +74,41 @@ const extractRequirements = async (req, res) => {
                 apiVersion: 'gpt-5-mini'
             }
         });
+        requirementId = requirement._id;
 
         try {
             // Call OpenAI API using gpt-5-mini
-            const completion = await openai.responses.create({
+            const completion = await openai.responses.parse({
                 model: "gpt-5-mini",
                 reasoning: { effort: "low" },
                 input: [
-                    { role: "system", content: SYSTEM_PROMPT },
+                    {
+                        role: "system",
+                        content: "You are an expert business analyst. Extract structured software requirements from natural language text into the defined schema."
+                    },
                     { role: "user", content: text }
-                ]
+                ],
+                text: {
+                    format: zodTextFormat(RequirementSchema, "requirements_schema")
+                }
             });
 
             // Check if the response is valid
-            if (!completion || !completion.output_text || !completion.output) {
+            if (!completion || !completion.output_parsed) {
                 console.error('Invalid OpenAI response structure:', completion);
                 throw new Error('Invalid response from AI service');
             }
 
-            const aiResponse = completion.output_text;
+            const extractedRequirements = completion.output_parsed;
 
-            if (process.env.NODE_ENV !== 'production') {
-                console.log('AI Response:\n', aiResponse);
-            }
-
-            // Check if the AI response is empty or null
-            if (!aiResponse || aiResponse.trim() === '') {
+            // Check if the AI response exists
+            if (!extractedRequirements) {
                 console.error('Empty AI response received');
                 throw new Error('Empty response from AI service');
             }
 
-            // Parse the AI response
-            let extractedRequirements;
-            try {
-                extractedRequirements = JSON.parse(aiResponse);
-            } catch (parseError) {
-                console.error('Failed to parse AI response:', parseError);
-                console.error('Raw AI response that failed to parse:', JSON.stringify(aiResponse));
-                throw new Error('Failed to parse requirements from AI response');
+            if (process.env.NODE_ENV !== 'production') {
+                console.log('AI Response:\n', extractedRequirements);
             }
 
             // Generate a title if not provided
@@ -155,15 +149,16 @@ const extractRequirements = async (req, res) => {
             });
 
         } catch (aiError) {
-            // Update requirement status to 'failed' if AI processing fails
-            if (requirement) {
-                requirement.status = 'failed';
-                requirement.metadata = {
-                    ...requirement.metadata,
-                    processingTime: Date.now() - startTime,
-                    errorMessage: aiError.message
-                };
-                await requirement.save();
+            const failedRequirementId = requirementId;
+
+            if (failedRequirementId) {
+                try {
+                    await Requirement.deleteOne({ _id: failedRequirementId });
+                } catch (deleteError) {
+                    console.error('Error deleting failed requirement:', deleteError);
+                } finally {
+                    requirement = null;
+                }
             }
 
             console.error('AI processing error:', aiError);
@@ -173,7 +168,7 @@ const extractRequirements = async (req, res) => {
                 return res.status(402).json({
                     success: false,
                     message: 'OpenAI API quota exceeded. Please try again later.',
-                    requirementId: requirement?._id
+                    requirementId: failedRequirementId
                 });
             }
 
@@ -181,7 +176,7 @@ const extractRequirements = async (req, res) => {
                 return res.status(500).json({
                     success: false,
                     message: 'OpenAI API configuration error',
-                    requirementId: requirement?._id
+                    requirementId: failedRequirementId
                 });
             }
 
@@ -189,25 +184,22 @@ const extractRequirements = async (req, res) => {
                 success: false,
                 message: 'Failed to extract requirements',
                 details: aiError.message,
-                requirementId: requirement?._id
+                requirementId: failedRequirementId
             });
         }
 
     } catch (error) {
         console.error('Error in extractRequirements:', error);
 
-        // If we have a requirement record, update it to failed status
-        if (requirement) {
+        const failedRequirementId = requirementId;
+
+        if (failedRequirementId) {
             try {
-                requirement.status = 'failed';
-                requirement.metadata = {
-                    ...requirement.metadata,
-                    processingTime: Date.now() - startTime,
-                    errorMessage: error.message
-                };
-                await requirement.save();
-            } catch (saveError) {
-                console.error('Error updating requirement to failed status:', saveError);
+                await Requirement.deleteOne({ _id: failedRequirementId });
+            } catch (deleteError) {
+                console.error('Error deleting failed requirement:', deleteError);
+            } finally {
+                requirement = null;
             }
         }
 
@@ -215,7 +207,7 @@ const extractRequirements = async (req, res) => {
             success: false,
             message: 'Failed to extract requirements',
             error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
-            requirementId: requirement?._id
+            requirementId: failedRequirementId
         });
     }
 };
