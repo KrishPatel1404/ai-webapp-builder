@@ -11,12 +11,13 @@ const openai = new OpenAI({
 // System prompt for requirement extraction
 const SYSTEM_PROMPT = `
 You are an expert business analyst specialized in extracting structured software requirements from natural language descriptions.
-Your job: analyze the input text and fill any details you can infer from the text.
+Your job: analyze the input text and fill any details you can infer from the text. Keep the features simple and concise you are making a mock app.
 Rules:
 - Extract ONLY what is explicitly stated or reasonably implied in the text.
 - Do not invent requirements that are not supported by the input.
 - Be specific and actionable in feature descriptions.
 - Keep names concise and consistent, but meaningful and use spaces between words.
+- Do not include any API calls, database schemas, or external implementation details in the requirements.
 `;
 
 // Zod schema for structured requirements
