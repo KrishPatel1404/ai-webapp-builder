@@ -11,6 +11,7 @@ import {
   FiChevronDown,
   FiChevronUp,
   FiCheck,
+  FiRefreshCcw,
 } from "react-icons/fi";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
@@ -34,6 +35,7 @@ function Apps() {
   const [loadingAppDetails, setLoadingAppDetails] = useState(false);
   const [isCodeExpanded, setIsCodeExpanded] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -332,6 +334,133 @@ function Apps() {
     setIsCodeExpanded(!isCodeExpanded);
   };
 
+  const handleRegenerateApp = async () => {
+    if (!selectedApp || isRegenerating) {
+      return;
+    }
+
+    try {
+      setIsRegenerating(true);
+      setError("");
+      setSuccessMessage("");
+      setSelectedApp((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: "generating",
+              errorMessage: null,
+            }
+          : prev
+      );
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/apps/regenerate`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ appId: selectedApp._id }),
+        }
+      );
+
+      let responseData = null;
+      try {
+        responseData = await response.json();
+      } catch (parseError) {
+        console.warn("Failed to parse regenerate response:", parseError);
+      }
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          navigate("/login");
+          return;
+        }
+
+        const message =
+          responseData?.error ||
+          responseData?.message ||
+          "Failed to regenerate app";
+        throw new Error(message);
+      }
+
+      const regeneratedApp = responseData?.app;
+
+      if (regeneratedApp) {
+        const updatedApp = {
+          _id: regeneratedApp.id,
+          appName: regeneratedApp.name,
+          description: regeneratedApp.description,
+          status: regeneratedApp.status,
+          colorCode: regeneratedApp.colorCode,
+          createdAt: regeneratedApp.createdAt,
+          generatedCode:
+            regeneratedApp.generatedCode?.code ?? selectedApp.generatedCode,
+          requirement: selectedApp.requirement,
+          metadata: regeneratedApp.metadata,
+          errorMessage: null,
+        };
+
+        setSelectedApp((prev) =>
+          prev
+            ? {
+                ...prev,
+                ...updatedApp,
+                generatedCode: updatedApp.generatedCode,
+              }
+            : updatedApp
+        );
+
+        setApps((prevApps) =>
+          prevApps.map((app) =>
+            app._id === regeneratedApp.id
+              ? {
+                  ...app,
+                  appName: regeneratedApp.name,
+                  description: regeneratedApp.description,
+                  status: regeneratedApp.status,
+                  colorCode: regeneratedApp.colorCode,
+                  createdAt: regeneratedApp.createdAt,
+                }
+              : app
+          )
+        );
+
+        setSuccessMessage(
+          responseData.message || "App regenerated successfully!"
+        );
+        setTimeout(() => setSuccessMessage(""), 3000);
+      } else {
+        setSuccessMessage("App regeneration request received.");
+        setTimeout(() => setSuccessMessage(""), 3000);
+      }
+
+      setError("");
+    } catch (err) {
+      console.error("Error regenerating app:", err);
+      setError(err.message || "Failed to regenerate app. Please try again.");
+      setTimeout(() => setError(""), 3000);
+      setSelectedApp((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: prev.status === "generating" ? "failed" : prev.status,
+              errorMessage: err.message || prev.errorMessage,
+            }
+          : prev
+      );
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+
   if (loading || loadingApps) {
     return (
       <div className="min-h-screen flex flex-col relative overflow-hidden bg-gray-900 text-white">
@@ -573,7 +702,28 @@ function Apps() {
                             </span>
                           </div>
                         </div>
-                        <div className="flex space-x-2">
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={handleRegenerateApp}
+                            disabled={
+                              isRegenerating ||
+                              selectedApp.status === "generating"
+                            }
+                            className={`flex items-center px-4 py-2 rounded-lg transition-colors duration-200 font-medium ${
+                              isRegenerating ||
+                              selectedApp.status === "generating"
+                                ? "bg-blue-700/60 text-blue-100 cursor-not-allowed"
+                                : "bg-blue-600 hover:bg-blue-700 text-white"
+                            }`}
+                            title="Regenerate this app"
+                          >
+                            <FiRefreshCcw
+                              className={`mr-2 ${
+                                isRegenerating ? "animate-spin" : ""
+                              }`}
+                            />
+                            {isRegenerating ? "Regenerating..." : "Regenerate"}
+                          </button>
                           {selectedApp.status === "completed" && (
                             <Link
                               to={`/preview?id=${selectedApp._id}`}
