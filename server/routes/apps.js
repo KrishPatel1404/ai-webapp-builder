@@ -2,6 +2,7 @@ const express = require('express');
 const { protect } = require('../middleware/auth');
 const {
     generateApp,
+    regenerateApp,
     getUserApps,
     getAppById,
     deleteApp,
@@ -23,6 +24,11 @@ router.route('/')
 // @route   POST /api/apps/generate
 // @access  Private
 router.post('/generate', generateApp);
+
+// @desc    Regenerate app from existing app and requirement
+// @route   POST /api/apps/regenerate
+// @access  Private
+router.post('/regenerate', regenerateApp);
 
 // @desc    Get apps for a specific requirement
 // @route   GET /api/apps/requirement/:requirementId
