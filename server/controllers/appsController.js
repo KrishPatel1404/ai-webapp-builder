@@ -335,6 +335,23 @@ const regenerateApp = async (req, res) => {
 
             const processingTime = Date.now() - startTime;
 
+            // Update app name with versioning if no warning message was provided
+            if (!warningMessage || (typeof warningMessage === 'string' && warningMessage.trim().length === 0)) {
+                const currentName = app.name;
+                const versionRegex = / - V(\d+)$/;
+                const match = currentName.match(versionRegex);
+
+                if (match) {
+                    // App already has a version, increment it
+                    const currentVersion = parseInt(match[1]);
+                    const newVersion = currentVersion + 1;
+                    app.name = currentName.replace(versionRegex, ` - V${newVersion}`);
+                } else {
+                    // App doesn't have a version, start with V2
+                    app.name = `${currentName} - V2`;
+                }
+            }
+
             app.generatedCode = generatedCode;
             app.status = 'completed';
             app.metadata = {
