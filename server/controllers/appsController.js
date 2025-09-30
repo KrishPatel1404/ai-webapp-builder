@@ -110,10 +110,10 @@ const generateApp = async (req, res) => {
                 console.log('Sending generation prompt to OpenAI:\n', generationPrompt);
             }
 
-            // Call OpenAI API using gpt-5-mini
+            // Call OpenAI API using gpt-5
             const completion = await openai.responses.create({
-                model: "gpt-5-mini",
-                reasoning: { effort: "low" },
+                model: "gpt-5",
+                reasoning: { effort: "medium" },
                 input: [
                     { role: "system", content: SYSTEM_PROMPT },
                     { role: "user", content: generationPrompt }
@@ -300,8 +300,8 @@ const regenerateApp = async (req, res) => {
             }
 
             const completion = await openai.responses.create({
-                model: "gpt-5-mini",
-                reasoning: { effort: "low" },
+                model: "gpt-5",
+                reasoning: { effort: "medium" },
                 input: [
                     { role: "system", content: SYSTEM_PROMPT },
                     { role: "user", content: generationPrompt }

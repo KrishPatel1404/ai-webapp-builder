@@ -72,15 +72,15 @@ const extractRequirements = async (req, res) => {
             metadata: {
                 processingTime: 0,
                 tokensUsed: 0,
-                apiVersion: 'gpt-5-mini'
+                apiVersion: 'gpt-5'
             }
         });
         requirementId = requirement._id;
 
         try {
-            // Call OpenAI API using gpt-5-mini
+            // Call OpenAI API using gpt-5
             const completion = await openai.responses.parse({
-                model: "gpt-5-mini",
+                model: "gpt-5",
                 reasoning: { effort: "low" },
                 input: [
                     {
@@ -126,7 +126,7 @@ const extractRequirements = async (req, res) => {
             requirement.metadata = {
                 processingTime: processingTime,
                 tokensUsed: completion.usage?.total_tokens || 0,
-                apiVersion: 'gpt-5-mini'
+                apiVersion: 'gpt-5'
             };
 
             await requirement.save();
