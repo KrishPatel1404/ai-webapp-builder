@@ -113,7 +113,7 @@ const generateApp = async (req, res) => {
             // Call OpenAI API using gpt-5-nano
             const completion = await openai.responses.create({
                 model: "gpt-5-nano",
-                reasoning: { effort: "medium" },
+                reasoning: { effort: "low" },
                 input: [
                     { role: "system", content: SYSTEM_PROMPT },
                     { role: "user", content: generationPrompt }
@@ -301,7 +301,7 @@ const regenerateApp = async (req, res) => {
 
             const completion = await openai.responses.create({
                 model: "gpt-5-nano",
-                reasoning: { effort: "medium" },
+                reasoning: { effort: "low" },
                 input: [
                     { role: "system", content: SYSTEM_PROMPT },
                     { role: "user", content: generationPrompt }
