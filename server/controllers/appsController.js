@@ -57,7 +57,7 @@ Theme Color: ${requirement.colorCode || '#1976d2'}
 Use this color as the primary theme color throughout the application. Apply it to AppBars, primary buttons, active states, and other key UI elements. You can create variations of this color (lighter/darker shades) for hover states and secondary elements.
 ${warningSection}Using simple code and checking it over. Use MaterialUI components to make a mock web-app from the template given. And ensure more than basic functionality. Do your best to include advanced lists, checkboxes, saving data and anything advanced where possible. Think about what features would be requirements even if not directly in the requirements list.
 
-ENSURE TO ALWAYS STICK TO MATERIAL UI AND THE TEMPLATE GIVEN. DO NOT USE ANY OTHER LIBRARIES OR EXTENRAL RESOURCES. DO NOT USE ANY APIS`;
+ENSURE TO ALWAYS STICK TO MATERIAL UI AND THE TEMPLATE GIVEN. DO NOT USE ANY OTHER LIBRARIES OR EXTENRAL RESOURCES. DO NOT USE ANY APIS. DO NOT ADD ANY NOTES OR Backticks`;
 };
 
 // @desc    Generate app from requirements
@@ -110,9 +110,9 @@ const generateApp = async (req, res) => {
                 console.log('Sending generation prompt to OpenAI:\n', generationPrompt);
             }
 
-            // Call OpenAI API using gpt-5
+            // Call OpenAI API using gpt-5-nano
             const completion = await openai.responses.create({
-                model: "gpt-5",
+                model: "gpt-5-nano",
                 reasoning: { effort: "medium" },
                 input: [
                     { role: "system", content: SYSTEM_PROMPT },
@@ -157,7 +157,7 @@ const generateApp = async (req, res) => {
             app.metadata = {
                 processingTime,
                 tokensUsed: completion.usage?.total_tokens || 0,
-                apiVersion: 'gpt-5',
+                apiVersion: 'gpt-5-nano',
                 generationPrompt
             };
 
@@ -196,7 +196,7 @@ const generateApp = async (req, res) => {
             app.metadata = {
                 processingTime: Date.now() - startTime,
                 tokensUsed: 0,
-                apiVersion: 'gpt-5',
+                apiVersion: 'gpt-5-nano',
                 generationPrompt
             };
             await app.save();
@@ -229,7 +229,7 @@ const generateApp = async (req, res) => {
                     metadata: {
                         processingTime: Date.now() - startTime,
                         tokensUsed: 0,
-                        apiVersion: 'gpt-5'
+                        apiVersion: 'gpt-5-nano'
                     }
                 });
             } catch (updateError) {
@@ -300,7 +300,7 @@ const regenerateApp = async (req, res) => {
             }
 
             const completion = await openai.responses.create({
-                model: "gpt-5",
+                model: "gpt-5-nano",
                 reasoning: { effort: "medium" },
                 input: [
                     { role: "system", content: SYSTEM_PROMPT },
@@ -357,7 +357,7 @@ const regenerateApp = async (req, res) => {
             app.metadata = {
                 processingTime,
                 tokensUsed: completion.usage?.total_tokens || 0,
-                apiVersion: 'gpt-5',
+                apiVersion: 'gpt-5-nano',
                 generationPrompt
             };
             app.errorMessage = null;
@@ -393,7 +393,7 @@ const regenerateApp = async (req, res) => {
             app.metadata = {
                 processingTime: Date.now() - startTime,
                 tokensUsed: 0,
-                apiVersion: 'gpt-5',
+                apiVersion: 'gpt-5-nano',
                 generationPrompt
             };
 
